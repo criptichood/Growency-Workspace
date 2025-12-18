@@ -135,7 +135,7 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
     
     if (storedProjects) {
       try {
-        setProjects(JSON.parse(storedProjects));
+        setProjects(JSON.parse(storedProjects) as Project[]);
       } catch (e) {
         setProjects(INITIAL_PROJECTS);
       }
@@ -146,7 +146,7 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
 
     if (storedNotifs) {
       try {
-        setNotifications(JSON.parse(storedNotifs));
+        setNotifications(JSON.parse(storedNotifs) as SystemNotification[]);
       } catch (e) {
         setNotifications(INITIAL_NOTIFICATIONS);
       }
@@ -157,7 +157,7 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
 
     if (storedDms) {
       try {
-        setDmThreads(JSON.parse(storedDms));
+        setDmThreads(JSON.parse(storedDms) as DirectMessageThread[]);
       } catch (e) {
         setDmThreads([]);
       }
@@ -165,7 +165,7 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
 
     if (storedResources) {
         try {
-            setResources(JSON.parse(storedResources));
+            setResources(JSON.parse(storedResources) as ResourceFile[]);
         } catch (e) {
             setResources(INITIAL_RESOURCES);
         }
@@ -338,7 +338,7 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
   }
 
   function reorderProjects(startIndex: number, endIndex: number) {
-    const result = Array.from(projects);
+    const result = [...projects];
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
     saveProjects(result);
