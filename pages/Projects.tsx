@@ -23,7 +23,7 @@ export function Projects() {
     return matchesSearch && matchesStatus;
   });
 
-  const statusOptions: (ProjectStatus | 'All')[] = ['All', 'In Progress', 'Pending', 'On Hold', 'Completed'];
+  const statusOptions: (ProjectStatus | 'All')[] = ['All', 'In Progress', 'Pending', 'On Hold', 'Completed', 'Deletion Requested'];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -58,7 +58,7 @@ export function Projects() {
           
           <div className="flex items-center gap-3 w-full sm:w-auto relative">
             <div className="hidden lg:flex items-center gap-2 mr-2">
-                {statusOptions.map(opt => (
+                {statusOptions.slice(0, 5).map(opt => (
                   <button
                     key={opt}
                     onClick={() => setStatusFilter(opt)}

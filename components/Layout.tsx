@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { NavigationDock } from './NavigationDock';
 import { TopBar } from './TopBar';
+import { DirectMessageDrawer } from './navigation/DirectMessageDrawer';
 import { useConfig } from '../context/ConfigContext';
 
 export function Layout() {
@@ -34,6 +35,8 @@ export function Layout() {
           </div>
         </main>
       </div>
+
+      <DirectMessageDrawer />
     </div>
   );
 }

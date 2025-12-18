@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Project, ProjectBrief, ChatMessage, Note, SearchResults, SearchResult, ProjectTask, ProjectPhase, AiChatMessage } from '../types';
+import { Project, ProjectBrief, ChatMessage, Note, SearchResults, SearchResult, ProjectTask, ProjectPhase, AiChatMessage, Role, SystemNotification, DirectMessageThread, Attachment, ResourceFile, ResourceCategory } from '../types';
 import { INITIAL_PROJECTS } from '../constants';
 
 interface NewProjectData {
@@ -31,35 +31,149 @@ interface ProjectContextType {
   addPhase: (projectId: string, phaseName: string) => void;
   deletePhase: (projectId: string, phaseId: string) => void;
   completePhase: (projectId: string, phaseId: string) => void;
-  performSearch: (query: string) => SearchResults;
+  performSearch: (query: string, userId: string, role: Role) => SearchResults;
   
   // AI Chat Persistence
   aiChats: Record<string, AiChatMessage[]>;
   updateAiChat: (projectId: string, messages: AiChatMessage[]) => void;
   
+  // System Notifications
+  notifications: SystemNotification[];
+  addNotification: (notification: Omit<SystemNotification, 'id' | 'createdAt'>) => void;
+
+  // Direct Messages
+  dmThreads: DirectMessageThread[];
+  isDmDrawerOpen: boolean;
+  activeDmThreadId: string | null;
+  toggleDmDrawer: (isOpen: boolean) => void;
+  openDmWithUser: (currentUserId: string, targetUserId: string) => void;
+  sendDmMessage: (threadId: string, text: string, userId: string, attachments?: Attachment[]) => void;
+  
+  // Resources
+  resources: ResourceFile[];
+  addResource: (file: Omit<ResourceFile, 'id' | 'uploadedAt'>) => void;
+  deleteResource: (id: string) => void;
+
   isLoading: boolean;
 }
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
 
+const INITIAL_NOTIFICATIONS: SystemNotification[] = [
+  {
+    id: 'sys-1',
+    type: 'info',
+    title: 'System Maintenance',
+    message: 'Scheduled maintenance this Saturday at 2 AM EST.',
+    createdBy: '1',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString() // 1 day ago
+  }
+];
+
+const INITIAL_RESOURCES: ResourceFile[] = [
+  {
+    id: 'res-1',
+    name: 'Brand Guidelines 2024.pdf',
+    type: 'application/pdf',
+    size: 2500000, // 2.5 MB
+    url: '#', // Mock URL
+    category: 'Brand',
+    uploadedBy: '1',
+    uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), // 5 days ago
+    description: 'Updated color palette and logo usage rules.'
+  },
+  {
+    id: 'res-2',
+    name: 'Q4 Sales Deck Template.pptx',
+    type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    size: 5200000, // 5.2 MB
+    url: '#',
+    category: 'Sales',
+    uploadedBy: '2',
+    uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
+    description: 'Standard slide deck for Q4 client pitches.'
+  },
+  {
+    id: 'res-3',
+    name: 'Employee Handbook.pdf',
+    type: 'application/pdf',
+    size: 1500000,
+    url: '#',
+    category: 'HR',
+    uploadedBy: '1',
+    uploadedAt: new Date('2023-01-15').toISOString(),
+    description: 'Company policies, benefits, and code of conduct.'
+  },
+  {
+    id: 'res-4',
+    name: 'Logo Pack (SVG/PNG).zip',
+    type: 'application/zip',
+    size: 12000000,
+    url: '#',
+    category: 'Brand',
+    uploadedBy: '1',
+    uploadedAt: new Date('2023-06-10').toISOString()
+  }
+];
+
 export function ProjectProvider({ children }: { children: ReactNode }) {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [notifications, setNotifications] = useState<SystemNotification[]>([]);
+  const [dmThreads, setDmThreads] = useState<DirectMessageThread[]>([]);
+  const [resources, setResources] = useState<ResourceFile[]>([]);
+  const [isDmDrawerOpen, setIsDmDrawerOpen] = useState(false);
+  const [activeDmThreadId, setActiveDmThreadId] = useState<string | null>(null);
+
   const [aiChats, setAiChats] = useState<Record<string, AiChatMessage[]>>({});
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const storedProjects = localStorage.getItem('growency_projects');
+    const storedNotifs = localStorage.getItem('growency_notifications');
+    const storedDms = localStorage.getItem('growency_dms');
+    const storedResources = localStorage.getItem('growency_resources');
+    
     if (storedProjects) {
       try {
         setProjects(JSON.parse(storedProjects));
       } catch (e) {
-        console.error('Failed to parse projects');
         setProjects(INITIAL_PROJECTS);
       }
     } else {
       setProjects(INITIAL_PROJECTS);
       localStorage.setItem('growency_projects', JSON.stringify(INITIAL_PROJECTS));
     }
+
+    if (storedNotifs) {
+      try {
+        setNotifications(JSON.parse(storedNotifs));
+      } catch (e) {
+        setNotifications(INITIAL_NOTIFICATIONS);
+      }
+    } else {
+      setNotifications(INITIAL_NOTIFICATIONS);
+      localStorage.setItem('growency_notifications', JSON.stringify(INITIAL_NOTIFICATIONS));
+    }
+
+    if (storedDms) {
+      try {
+        setDmThreads(JSON.parse(storedDms));
+      } catch (e) {
+        setDmThreads([]);
+      }
+    }
+
+    if (storedResources) {
+        try {
+            setResources(JSON.parse(storedResources));
+        } catch (e) {
+            setResources(INITIAL_RESOURCES);
+        }
+    } else {
+        setResources(INITIAL_RESOURCES);
+        localStorage.setItem('growency_resources', JSON.stringify(INITIAL_RESOURCES));
+    }
+
     setIsLoading(false);
   }, []);
 
@@ -73,6 +187,106 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
 
     setProjects(finalProjects);
     localStorage.setItem('growency_projects', JSON.stringify(finalProjects));
+  }
+
+  function saveNotifications(newNotifs: SystemNotification[]) {
+    setNotifications(newNotifs);
+    localStorage.setItem('growency_notifications', JSON.stringify(newNotifs));
+  }
+
+  function saveDms(newDms: DirectMessageThread[]) {
+    setDmThreads(newDms);
+    localStorage.setItem('growency_dms', JSON.stringify(newDms));
+  }
+
+  function saveResources(newResources: ResourceFile[]) {
+      setResources(newResources);
+      localStorage.setItem('growency_resources', JSON.stringify(newResources));
+  }
+
+  // --- DM Logic ---
+
+  function toggleDmDrawer(isOpen: boolean) {
+    setIsDmDrawerOpen(isOpen);
+    if (!isOpen) setActiveDmThreadId(null);
+  }
+
+  function openDmWithUser(currentUserId: string, targetUserId: string) {
+    if (currentUserId === targetUserId) return;
+
+    // Check if thread exists
+    const existingThread = dmThreads.find(
+      t => t.participants.includes(currentUserId) && t.participants.includes(targetUserId)
+    );
+
+    setIsDmDrawerOpen(true);
+
+    if (existingThread) {
+      setActiveDmThreadId(existingThread.id);
+    } else {
+      // Create new thread
+      const newThread: DirectMessageThread = {
+        id: Math.random().toString(36).substr(2, 9),
+        participants: [currentUserId, targetUserId],
+        lastMessage: '',
+        lastUpdated: new Date().toISOString(),
+        unreadCount: 0,
+        messages: []
+      };
+      saveDms([newThread, ...dmThreads]);
+      setActiveDmThreadId(newThread.id);
+    }
+  }
+
+  function sendDmMessage(threadId: string, text: string, userId: string, attachments: Attachment[] = []) {
+    const newMessage: ChatMessage = {
+      id: Math.random().toString(36).substr(2, 9),
+      userId,
+      text,
+      timestamp: new Date().toISOString(),
+      attachments
+    };
+
+    const displayText = attachments.length > 0 && !text ? `Sent ${attachments.length} attachment(s)` : text;
+
+    const updatedThreads = dmThreads.map(t => {
+      if (t.id === threadId) {
+        return {
+          ...t,
+          messages: [...t.messages, newMessage],
+          lastMessage: displayText,
+          lastUpdated: new Date().toISOString(),
+          // In a real app, we'd handle unread counts per user here
+        };
+      }
+      return t;
+    }).sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime());
+
+    saveDms(updatedThreads);
+  }
+
+  // --- End DM Logic ---
+
+  function addNotification(notification: Omit<SystemNotification, 'id' | 'createdAt'>) {
+    const newNotif: SystemNotification = {
+      ...notification,
+      id: Math.random().toString(36).substr(2, 9),
+      createdAt: new Date().toISOString()
+    };
+    saveNotifications([newNotif, ...notifications]);
+  }
+
+  function addResource(file: Omit<ResourceFile, 'id' | 'uploadedAt'>) {
+      const newResource: ResourceFile = {
+          ...file,
+          id: Math.random().toString(36).substr(2, 9),
+          uploadedAt: new Date().toISOString()
+      };
+      saveResources([newResource, ...resources]);
+  }
+
+  function deleteResource(id: string) {
+      saveResources(resources.filter(r => r.id !== id));
   }
 
   function updateAiChat(projectId: string, messages: AiChatMessage[]) {
@@ -313,7 +527,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     saveProjects(newProjects);
   }
 
-  function performSearch(query: string): SearchResults {
+  function performSearch(query: string, userId: string, role: Role): SearchResults {
     const results: SearchResults = {
       projects: [],
       briefs: [],
@@ -325,6 +539,11 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     const lowerQuery = query.toLowerCase();
 
     projects.forEach(p => {
+      // Permission Check: Admin sees all, others only see assigned projects
+      if (role !== 'Admin' && !p.assignedUsers.includes(userId)) {
+        return;
+      }
+
       if (p.name.toLowerCase().includes(lowerQuery) || p.code.toLowerCase().includes(lowerQuery) || p.clientName.toLowerCase().includes(lowerQuery) || p.description.toLowerCase().includes(lowerQuery)) {
         results.projects.push({
           id: p.id,
@@ -400,6 +619,9 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       toggleTask, addTaskToPhase, deleteTask, addPhase, deletePhase, completePhase,
       performSearch, 
       aiChats, updateAiChat,
+      notifications, addNotification,
+      dmThreads, isDmDrawerOpen, activeDmThreadId, toggleDmDrawer, openDmWithUser, sendDmMessage,
+      resources, addResource, deleteResource,
       isLoading 
     }}>
       {children}

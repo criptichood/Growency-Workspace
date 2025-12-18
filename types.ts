@@ -33,7 +33,7 @@ export interface User {
   };
 }
 
-export type ProjectStatus = 'In Progress' | 'Completed' | 'Pending' | 'On Hold';
+export type ProjectStatus = 'In Progress' | 'Completed' | 'Pending' | 'On Hold' | 'Deletion Requested';
 
 export interface ProjectTask {
   id: string;
@@ -61,11 +61,20 @@ export interface ProjectBrief {
   lastUpdatedAt: string;
 }
 
+export interface Attachment {
+  id: string;
+  name: string;
+  type: string; // MIME type
+  url: string; // Data URL for this demo
+  size: number;
+}
+
 export interface ChatMessage {
   id: string;
   userId: string;
   text: string;
   timestamp: string;
+  attachments?: Attachment[];
 }
 
 export interface AiChatMessage {
@@ -104,6 +113,24 @@ export interface Project {
   updatedAt: string;
 }
 
+export interface SystemNotification {
+  id: string;
+  type: 'alert' | 'info' | 'success';
+  title: string;
+  message: string;
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface DirectMessageThread {
+  id: string;
+  participants: string[]; // User IDs
+  lastMessage: string;
+  lastUpdated: string;
+  unreadCount: number;
+  messages: ChatMessage[];
+}
+
 export enum PageTitle {
   DASHBOARD = 'Dashboard',
   PROJECTS = 'Projects',
@@ -138,4 +165,19 @@ export interface DashboardWidgetConfig {
   isVisible: boolean;
   order: number;
   colSpan: 1 | 2 | 3;
+}
+
+// Resource Vault Types
+export type ResourceCategory = 'Brand' | 'HR' | 'Sales' | 'Engineering' | 'Templates' | 'General';
+
+export interface ResourceFile {
+  id: string;
+  name: string;
+  type: string; // mime-type or extension
+  size: number;
+  url: string;
+  category: ResourceCategory;
+  uploadedBy: string; // User ID
+  uploadedAt: string;
+  description?: string;
 }

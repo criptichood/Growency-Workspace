@@ -1,6 +1,7 @@
-import { Calendar, MessageSquare, Plus, Edit2, ListTodo, CheckCircle2, ChevronRight, Clock } from 'lucide-react';
+import { Calendar, MessageSquare, Plus, ListTodo, CheckCircle2, ChevronRight, Clock, User as UserIcon } from 'lucide-react';
 import { Project } from '../../types';
-import { MOCK_USERS } from '../../constants';
+import { useAuth } from '../../context/AuthContext';
+import { useTeam } from '../../context/TeamContext';
 
 interface ProjectOverviewProps {
   project: Project;
@@ -10,12 +11,18 @@ interface ProjectOverviewProps {
 }
 
 export function ProjectOverview({ project, onEditClick, onMessageClick, onTabChange }: ProjectOverviewProps) {
+  const { user } = useAuth();
+  const { getUser } = useTeam();
+  const isAdmin = user?.role === 'Admin';
+
   const totalTasks = project.phases.flatMap(p => p.tasks).length;
   const completedTasks = project.phases.flatMap(p => p.tasks).filter(t => t.isCompleted).length;
   
   // Find the index of the first phase that has incomplete tasks
   const activePhaseIndex = project.phases.findIndex(ph => ph.tasks.some(t => !t.isCompleted));
   const activePhase = activePhaseIndex !== -1 ? project.phases[activePhaseIndex] : null;
+
+  const creator = getUser(project.createdBy);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -123,11 +130,31 @@ export function ProjectOverview({ project, onEditClick, onMessageClick, onTabCha
          <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm">
              <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-gray-900 dark:text-white">Project Info</h3>
-                <button onClick={onEditClick} className="p-1.5 text-gray-400 hover:text-indigo-600 transition-colors">
-                  <Edit2 size={14} />
-                </button>
              </div>
              <div className="space-y-5">
+                 {/* Created By Section */}
+                 <div>
+                     <div className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-widest font-black mb-2">Created By</div>
+                     <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-2xl border border-gray-100 dark:border-gray-600">
+                        {creator ? (
+                            <>
+                                <img src={creator.avatarUrl} alt={creator.name} className="w-8 h-8 rounded-xl bg-gray-200 dark:bg-gray-600 object-cover" />
+                                <div className="flex flex-col">
+                                    <span className="text-xs font-bold text-gray-900 dark:text-white">{creator.name}</span>
+                                    <span className="text-[9px] text-gray-500 dark:text-gray-400 font-medium">@{creator.username}</span>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="flex items-center gap-2 text-gray-400">
+                                <div className="w-8 h-8 rounded-xl bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                                    <UserIcon size={14} />
+                                </div>
+                                <span className="text-xs font-bold">Unknown User</span>
+                            </div>
+                        )}
+                     </div>
+                 </div>
+
                  <div>
                      <div className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-widest font-black mb-2">Client</div>
                      <div className="text-sm font-bold text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700/50 p-3 rounded-2xl border border-gray-100 dark:border-gray-600">{project.clientName}</div>
@@ -143,7 +170,7 @@ export function ProjectOverview({ project, onEditClick, onMessageClick, onTabCha
                      <div className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-widest font-black mb-3">Workspace Team</div>
                      <div className="space-y-2">
                          {project.assignedUsers.map((userId) => {
-                             const member = MOCK_USERS[userId];
+                             const member = getUser(userId);
                              if (!member) return null;
                              return (
                                <div key={userId} className="flex items-center justify-between group/user p-1 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-2xl transition-colors">
@@ -164,13 +191,16 @@ export function ProjectOverview({ project, onEditClick, onMessageClick, onTabCha
                                </div>
                              );
                          })}
-                         <button 
-                           onClick={onEditClick} 
-                           className="w-full mt-2 flex items-center justify-center gap-2 py-2 border border-dashed border-gray-300 dark:border-gray-600 rounded-2xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-indigo-600 hover:border-indigo-400 dark:hover:text-indigo-400 transition-all"
-                         >
-                             <Plus size={12} />
-                             Add Team Member
-                         </button>
+                         
+                         {isAdmin && (
+                             <button 
+                               onClick={onEditClick} 
+                               className="w-full mt-2 flex items-center justify-center gap-2 py-2 border border-dashed border-gray-300 dark:border-gray-600 rounded-2xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-indigo-600 hover:border-indigo-400 dark:hover:text-indigo-400 transition-all"
+                             >
+                                 <Plus size={12} />
+                                 Add Team Member
+                             </button>
+                         )}
                      </div>
                  </div>
              </div>

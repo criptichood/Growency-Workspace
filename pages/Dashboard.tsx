@@ -1,5 +1,5 @@
-import React from 'react';
-import { Users, DollarSign, Activity, Clock, Zap, Layout } from 'lucide-react';
+import React, { useState } from 'react';
+import { Users, DollarSign, Activity, Clock, Zap, Layout, Megaphone, Bell, Info, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useProjects } from '../context/ProjectContext';
 import { useDashboardLayout } from '../context/DashboardLayoutContext';
@@ -8,21 +8,37 @@ import { HealthSection } from '../components/dashboard/HealthSection';
 import { PrioritiesSection } from '../components/dashboard/PrioritiesSection';
 import { DashboardWidget } from '../components/dashboard/DashboardWidget';
 import { DashboardToolbar } from '../components/dashboard/DashboardToolbar';
+import { NotificationModal } from '../components/dashboard/NotificationModal';
 import { MOCK_USERS } from '../constants';
+
+type ActivityItem = 
+  | { type: 'message'; userId: string; projectName: string; projectId: string; timestamp: string; content: string }
+  | { type: 'note'; userId: string; projectName: string; projectId: string; timestamp: string; content: string }
+  | { type: 'notification'; id: string; notifType: 'info' | 'alert' | 'success'; title: string; message: string; timestamp: string; createdBy: string };
 
 export function Dashboard() {
   const { user } = useAuth();
-  const { projects } = useProjects();
+  const { projects, notifications } = useProjects();
   const { widgets, isEditMode } = useDashboardLayout();
+  const [isNotifModalOpen, setIsNotifModalOpen] = useState(false);
   
   const activeProjects = projects.filter(p => p.status === 'In Progress' || p.status === 'Pending');
   const completedCount = projects.filter(p => p.status === 'Completed').length;
   const inProgressCount = projects.filter(p => p.status === 'In Progress').length;
-  // Fix: Removed duplicate assignment to pendingCount which caused variable reference errors
   const pendingCount = projects.filter(p => p.status === 'Pending').length;
 
-  const recentActivities = projects
-    .flatMap(p => [
+  const isAdmin = user?.role === 'Admin';
+  const isSales = user?.role === 'Sales';
+  const canSeeRevenue = isAdmin || isSales;
+  const canCreateReports = isAdmin || isSales;
+  const canPostAnnouncements = isAdmin || isSales;
+
+  // Filter projects first based on user access (already handled by useProjects logic for search, 
+  // but we do it explicitly here for the activity feed to be safe).
+  const accessibleProjects = projects.filter(p => isAdmin || p.assignedUsers.includes(user?.id || ''));
+
+  // 1. Project Activities
+  const projectActivities: ActivityItem[] = accessibleProjects.flatMap(p => [
       ...p.messages.map(m => ({ 
         type: 'message' as const, 
         userId: m.userId, 
@@ -39,15 +55,23 @@ export function Dashboard() {
         timestamp: n.createdAt,
         content: `added a new ${n.type.toLowerCase()} to ${p.name}`
       }))
-    ])
-    .filter(activity => !!MOCK_USERS[activity.userId])
+  ]);
+
+  // 2. System Notifications (Global)
+  const systemNotifications: ActivityItem[] = notifications.map(n => ({
+      type: 'notification' as const,
+      id: n.id,
+      notifType: n.type,
+      title: n.title,
+      message: n.message,
+      timestamp: n.createdAt,
+      createdBy: n.createdBy
+  }));
+
+  // 3. Merge, Sort, and Limit to 5
+  const recentActivities = [...systemNotifications, ...projectActivities]
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
     .slice(0, 5);
-
-  const isAdmin = user?.role === 'Admin';
-  const isSales = user?.role === 'Sales';
-  const canSeeRevenue = isAdmin || isSales;
-  const canCreateReports = isAdmin || isSales;
 
   const renderWidget = (id: string) => {
     switch (id) {
@@ -91,6 +115,32 @@ export function Dashboard() {
             </h3>
             <div className="space-y-6">
               {recentActivities.map((activity, idx) => {
+                // RENDER NOTIFICATION
+                if (activity.type === 'notification') {
+                   const iconMap = {
+                       info: <Info size={16} className="text-blue-500" />,
+                       alert: <AlertTriangle size={16} className="text-amber-500" />,
+                       success: <CheckCircle2 size={16} className="text-green-500" />
+                   };
+                   const bgMap = {
+                       info: 'bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-900/30',
+                       alert: 'bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-900/30',
+                       success: 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-900/30'
+                   };
+
+                   return (
+                       <div key={idx} className={`p-4 rounded-2xl border ${bgMap[activity.notifType]} flex gap-3`}>
+                           <div className="shrink-0 mt-0.5">{iconMap[activity.notifType]}</div>
+                           <div>
+                               <p className="text-xs font-bold text-gray-900 dark:text-white">{activity.title}</p>
+                               <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 leading-relaxed">{activity.message}</p>
+                               <p className="text-[9px] text-gray-400 mt-2 font-bold uppercase tracking-widest">{new Date(activity.timestamp).toLocaleDateString()} • Global Announcement</p>
+                           </div>
+                       </div>
+                   );
+                }
+
+                // RENDER USER ACTIVITY
                 const author = MOCK_USERS[activity.userId];
                 return (
                   <div key={idx} className="flex gap-4 group">
@@ -108,6 +158,13 @@ export function Dashboard() {
                   </div>
                 );
               })}
+              
+              {recentActivities.length === 0 && (
+                  <div className="text-center py-8 text-gray-400">
+                      <Bell size={32} className="mx-auto mb-2 opacity-20" />
+                      <p className="text-xs font-medium">No recent updates</p>
+                  </div>
+              )}
             </div>
           </div>
         );
@@ -132,6 +189,15 @@ export function Dashboard() {
         </div>
         <div className="flex items-center gap-3">
           <DashboardToolbar />
+          {!isEditMode && canPostAnnouncements && (
+             <button 
+               onClick={() => setIsNotifModalOpen(true)}
+               className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm transition-all active:scale-95"
+             >
+               <Megaphone size={16} />
+               <span className="hidden sm:inline">Post Announcement</span>
+             </button>
+          )}
           {!isEditMode && canCreateReports && (
             <button className="px-5 py-2.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md hover:shadow-indigo-500/20 transition-all active:scale-95">
               New Report
@@ -157,6 +223,11 @@ export function Dashboard() {
            <span className="text-gray-400">Changes are saved automatically</span>
         </div>
       )}
+
+      <NotificationModal 
+        isOpen={isNotifModalOpen}
+        onClose={() => setIsNotifModalOpen(false)}
+      />
     </div>
   );
 }

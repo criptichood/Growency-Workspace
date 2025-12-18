@@ -1,7 +1,19 @@
-import { LayoutDashboard, FolderKanban, Settings, Users } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, Settings, Users, CheckSquare, Calendar as CalendarIcon, Video, FileBox } from 'lucide-react';
 import { NavItem, Project, User, UserStatusType } from './types';
 
 export const APP_NAME = 'Growency';
+
+export const INPUT_LIMITS = {
+  SHORT_TEXT: 100,       // Titles, Names, Usernames
+  LONG_TEXT: 500,        // Summaries
+  EMAIL: 254,
+  PROJECT_NAME: 50,
+  CLIENT_NAME: 50,
+  PROJECT_CODE: 20,
+  DESCRIPTION: 5000,     // Briefs, Notes (approx 1000 words)
+  CHAT_MESSAGE: 1000,    // Chat
+  URL: 2048
+};
 
 export const STATUS_OPTIONS: Record<UserStatusType, { color: string; label: string }> = {
   'Available': { color: 'bg-green-500', label: 'Available' },
@@ -21,6 +33,26 @@ export const NAV_ITEMS: NavItem[] = [
     label: 'Projects',
     path: '/projects',
     icon: FolderKanban,
+  },
+  {
+    label: 'My Tasks',
+    path: '/my-tasks',
+    icon: CheckSquare,
+  },
+  {
+    label: 'Calendar',
+    path: '/calendar',
+    icon: CalendarIcon,
+  },
+  {
+    label: 'Meetings',
+    path: '/meetings',
+    icon: Video,
+  },
+  {
+    label: 'Resources',
+    path: '/resources',
+    icon: FileBox,
   },
   {
     label: 'Team',
@@ -190,8 +222,31 @@ export const INITIAL_PROJECTS: Project[] = [
         ]
       }
     ],
-    messages: [],
-    notes: [],
+    messages: [
+      {
+        id: 'msg_2_1',
+        userId: '4',
+        text: 'I have started researching React Native vs Flutter for this. Will share a doc soon.',
+        timestamp: '2023-11-02T09:00:00Z'
+      },
+      {
+        id: 'msg_2_2',
+        userId: '3',
+        text: 'Sounds good. Lean towards Flutter if we need complex custom UI rendering.',
+        timestamp: '2023-11-02T09:15:00Z'
+      }
+    ],
+    notes: [
+      {
+        id: 'note_2_1',
+        userId: '4',
+        title: 'Offline Sync Strategy',
+        content: 'We will use a local SQLite database that syncs with the backend whenever connection is available. Conflict resolution will be "server wins".',
+        type: 'Architecture',
+        createdAt: '2023-11-03T14:00:00Z',
+        updatedAt: '2023-11-03T14:00:00Z'
+      }
+    ],
     brief: {
       clientGoal: 'Launch a cross-platform mobile app for inventory management.',
       problemStatement: 'Field agents currently use pen and paper, leading to 15% data error rate.',
@@ -234,9 +289,25 @@ export const INITIAL_PROJECTS: Project[] = [
         userId: '2',
         text: 'Campaign is live! Checking analytics now.',
         timestamp: '2023-10-01T09:00:00Z'
+      },
+      {
+        id: 'msg_3_2',
+        userId: '4',
+        text: 'The CTR on the video ads is performing 20% above benchmark.',
+        timestamp: '2023-10-02T11:00:00Z'
       }
     ],
-    notes: [],
+    notes: [
+      {
+        id: 'note_3_1',
+        userId: '2',
+        title: 'Budget Allocation',
+        content: 'Shifted $5k from Facebook to TikTok ads due to higher engagement from the target demographic.',
+        type: 'Decision',
+        createdAt: '2023-09-25T10:00:00Z',
+        updatedAt: '2023-09-25T10:00:00Z'
+      }
+    ],
     brief: {
       clientGoal: 'Maximize holiday sales through targeted digital ads.',
       problemStatement: 'Last year\'s campaign had low engagement due to generic messaging.',
@@ -273,8 +344,46 @@ export const INITIAL_PROJECTS: Project[] = [
         ]
       }
     ],
-    messages: [],
-    notes: [],
+    messages: [
+      {
+        id: 'msg_4_1',
+        userId: '1',
+        text: 'Dave, please ensure we are logging all failed login attempts as per the new security policy.',
+        timestamp: '2023-12-12T13:00:00Z'
+      },
+      {
+        id: 'msg_4_2',
+        userId: '3',
+        text: 'Understood. I am adding a middleware to capture those events now.',
+        timestamp: '2023-12-12T13:05:00Z'
+      },
+      {
+        id: 'msg_4_3',
+        userId: '1',
+        text: 'Also, the client requested a demo for the PDF generation feature by Friday.',
+        timestamp: '2023-12-13T10:00:00Z'
+      }
+    ],
+    notes: [
+      {
+        id: 'note_4_1',
+        userId: '3',
+        title: 'Encryption Standards',
+        content: 'All data at rest must be encrypted using AES-256. Keys will be managed via AWS KMS.',
+        type: 'Decision',
+        createdAt: '2023-12-12T15:00:00Z',
+        updatedAt: '2023-12-12T15:00:00Z'
+      },
+      {
+        id: 'note_4_2',
+        userId: '1',
+        title: 'Compliance Checklist',
+        content: '1. User Access Logs\n2. Data Retention Policy (7 years)\n3. Role-Based Access Control',
+        type: 'Note',
+        createdAt: '2023-12-13T09:00:00Z',
+        updatedAt: '2023-12-13T09:00:00Z'
+      }
+    ],
     brief: {
       clientGoal: 'Streamline the quarterly audit process.',
       problemStatement: 'Manual Excel reconciliation takes 200+ hours per quarter.',

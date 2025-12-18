@@ -1,15 +1,20 @@
-import { Bell, ChevronRight, Home } from 'lucide-react';
+import { Bell, ChevronRight, Home, MessageSquareText } from 'lucide-react';
 import { useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useProjects } from '../context/ProjectContext';
 import { GlobalSearch } from './navigation/GlobalSearch';
 
 export function TopBar() {
   const { user } = useAuth();
+  const { toggleDmDrawer, dmThreads } = useProjects();
   const location = useLocation();
   
   const pathnames = location.pathname.split('/').filter((x) => x);
 
   if (!user) return null;
+
+  // Calculate unread (mock logic: just presence of threads for now, but scalable)
+  const hasMessages = dmThreads.some(t => t.participants.includes(user.id));
 
   return (
     <header className="sticky top-0 z-30 h-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 flex items-center justify-between transition-colors">
@@ -50,6 +55,15 @@ export function TopBar() {
         <div className="hidden md:block">
           <GlobalSearch />
         </div>
+
+        <button 
+          onClick={() => toggleDmDrawer(true)}
+          className="relative p-2.5 text-gray-500 hover:text-indigo-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 rounded-xl transition-all active:scale-95 group"
+          title="Messages"
+        >
+          <MessageSquareText size={20} className="group-hover:scale-110 transition-transform" />
+          {hasMessages && <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-indigo-500 rounded-full ring-2 ring-white dark:ring-gray-800"></span>}
+        </button>
 
         <button className="relative p-2.5 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 rounded-xl transition-all active:scale-95 group">
           <Bell size={20} className="group-hover:rotate-12 transition-transform" />

@@ -2,7 +2,8 @@ import { useState, useEffect, FormEvent } from 'react';
 import { X, Save, Calendar, Loader2, Check, Hash, Sparkles } from 'lucide-react';
 import { Project, ProjectStatus } from '../types';
 import { useAuth } from '../context/AuthContext';
-import { MOCK_USERS } from '../constants';
+import { useTeam } from '../context/TeamContext';
+import { INPUT_LIMITS } from '../constants';
 
 interface ProjectModalProps {
   isOpen: boolean;
@@ -14,9 +15,12 @@ interface ProjectModalProps {
 
 export function ProjectModal({ isOpen, onClose, onSubmit, initialData, title }: ProjectModalProps) {
   const { user } = useAuth();
+  const { users } = useTeam();
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   
+  const isAdmin = user?.role === 'Admin';
+
   const [formData, setFormData] = useState({
     name: '',
     code: '',
@@ -49,6 +53,7 @@ export function ProjectModal({ isOpen, onClose, onSubmit, initialData, title }: 
           status: 'Pending',
           dueDate: '',
           description: '',
+          // If admin, start empty. If non-admin creator, auto-assign self (will be hidden from UI but submitted).
           assignedUsers: user ? [user.id] : []
         });
       }
@@ -72,6 +77,7 @@ export function ProjectModal({ isOpen, onClose, onSubmit, initialData, title }: 
         ...formData,
         code: formData.code.toUpperCase().replace(/\s/g, '-'),
         createdBy: initialData?.createdBy || user?.id || '1',
+        // Ensure at least the creator or current user is assigned if list is empty
         assignedUsers: formData.assignedUsers.length > 0 ? formData.assignedUsers : [user?.id || '1']
     };
 
@@ -126,6 +132,7 @@ export function ProjectModal({ isOpen, onClose, onSubmit, initialData, title }: 
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  maxLength={INPUT_LIMITS.PROJECT_NAME}
                   className="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/40 text-gray-900 dark:text-white px-5 py-3 text-sm font-bold focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all"
                   placeholder="e.g. Website Redesign"
                 />
@@ -140,6 +147,7 @@ export function ProjectModal({ isOpen, onClose, onSubmit, initialData, title }: 
                       required
                       value={formData.code}
                       onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase().replace(/\s/g, '-') })}
+                      maxLength={INPUT_LIMITS.PROJECT_CODE}
                       className="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/40 text-gray-900 dark:text-white pl-12 pr-24 py-3 text-sm font-black tracking-widest focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all"
                       placeholder="GRW-01"
                     />
@@ -161,6 +169,7 @@ export function ProjectModal({ isOpen, onClose, onSubmit, initialData, title }: 
                   required
                   value={formData.clientName}
                   onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
+                  maxLength={INPUT_LIMITS.CLIENT_NAME}
                   className="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/40 text-gray-900 dark:text-white px-5 py-3 text-sm font-bold focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all"
                   placeholder="e.g. Acme Corp"
                 />
@@ -177,6 +186,7 @@ export function ProjectModal({ isOpen, onClose, onSubmit, initialData, title }: 
                   <option value="In Progress">In Progress</option>
                   <option value="On Hold">On Hold</option>
                   <option value="Completed">Completed</option>
+                  {/* We do not show 'Deletion Requested' here as it's a workflow state */}
                 </select>
               </div>
 
@@ -194,34 +204,43 @@ export function ProjectModal({ isOpen, onClose, onSubmit, initialData, title }: 
                 </div>
               </div>
 
-              <div className="col-span-2">
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Assigned Team</label>
-                <div className="flex flex-wrap gap-2">
-                   {Object.values(MOCK_USERS).map(u => (
-                       <button
-                         key={u.id}
-                         type="button"
-                         onClick={() => handleUserToggle(u.id)}
-                         className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${
-                             formData.assignedUsers.includes(u.id) 
-                             ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-500/20' 
-                             : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-indigo-300'
-                         }`}
-                       >
-                           <img src={u.avatarUrl} alt="" className="w-4 h-4 rounded-lg object-cover" />
-                           {u.name.split(' ')[0]}
-                       </button>
-                   ))}
-                </div>
-              </div>
+              {/* Only Admins can assign team members */}
+              {isAdmin && (
+                  <div className="col-span-2">
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Assigned Team</label>
+                    <div className="flex flex-wrap gap-2">
+                       {users.map(u => (
+                           <button
+                             key={u.id}
+                             type="button"
+                             onClick={() => handleUserToggle(u.id)}
+                             className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${
+                                 formData.assignedUsers.includes(u.id) 
+                                 ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-500/20' 
+                                 : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-indigo-300'
+                             }`}
+                           >
+                               <img src={u.avatarUrl} alt="" className="w-4 h-4 rounded-lg object-cover" />
+                               {u.name.split(' ')[0]}
+                           </button>
+                       ))}
+                    </div>
+                  </div>
+              )}
 
               <div className="col-span-2">
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Description</label>
+                <div className="flex justify-between items-center mb-1">
+                   <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Description</label>
+                   <span className={`text-[10px] font-medium ${formData.description.length >= INPUT_LIMITS.DESCRIPTION ? 'text-red-500' : 'text-gray-400'}`}>
+                      {formData.description.length}/{INPUT_LIMITS.DESCRIPTION}
+                   </span>
+                </div>
                 <textarea
                   required
                   rows={3}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  maxLength={INPUT_LIMITS.DESCRIPTION}
                   className="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/40 text-gray-900 dark:text-white px-5 py-3 text-sm font-medium focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none resize-none transition-all"
                   placeholder="Short summary of the project goals..."
                 />

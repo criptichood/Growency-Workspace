@@ -9,7 +9,7 @@ import { Role } from '../types';
 export function Team() {
   const { user: currentUser } = useAuth();
   const { users } = useTeam();
-  const { projects } = useProjects();
+  const { projects, openDmWithUser } = useProjects();
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<Role | 'All'>('All');
 
@@ -31,6 +31,12 @@ export function Team() {
     'Admin': 'text-purple-600 bg-purple-50 dark:bg-purple-900/30 border-purple-100 dark:border-purple-800',
     'Sales': 'text-green-600 bg-green-50 dark:bg-green-900/30 border-green-100 dark:border-green-800',
     'Developer': 'text-blue-600 bg-blue-50 dark:bg-blue-900/30 border-blue-100 dark:border-blue-800'
+  };
+
+  const handleChat = (targetUserId: string) => {
+    if (currentUser) {
+        openDmWithUser(currentUser.id, targetUserId);
+    }
   };
 
   return (
@@ -126,7 +132,10 @@ export function Team() {
                      <Mail size={14} />
                      Email
                    </a>
-                   <button className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg shadow-indigo-500/10 transition-all active:scale-95">
+                   <button 
+                     onClick={() => handleChat(member.id)}
+                     className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg shadow-indigo-500/10 transition-all active:scale-95"
+                   >
                      <MessageCircle size={14} />
                      Chat
                    </button>

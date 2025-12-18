@@ -7,6 +7,11 @@ import { ProjectDetails } from './pages/ProjectDetails';
 import { Team } from './pages/Team';
 import { Settings } from './pages/Settings';
 import { Login } from './pages/Login';
+import { SearchPage } from './pages/SearchPage';
+import { MyTasks } from './pages/MyTasks';
+import { Calendar } from './pages/Calendar';
+import { Meetings } from './pages/Meetings';
+import { Resources } from './pages/Resources';
 import { AuthProvider } from './context/AuthContext';
 import { TeamProvider } from './context/TeamContext';
 import { ProjectProvider } from './context/ProjectContext';
@@ -36,8 +41,13 @@ export default function App() {
                       <Route path="dashboard" element={<Dashboard />} />
                       <Route path="projects" element={<Projects />} />
                       <Route path="projects/:projectCode" element={<ProjectDetails />} />
+                      <Route path="my-tasks" element={<MyTasks />} />
+                      <Route path="calendar" element={<Calendar />} />
+                      <Route path="meetings" element={<Meetings />} />
+                      <Route path="resources" element={<Resources />} />
                       <Route path="team" element={<Team />} />
                       <Route path="settings" element={<Settings />} />
+                      <Route path="search" element={<SearchPage />} />
                     </Route>
                   </Routes>
                 </HashRouter>

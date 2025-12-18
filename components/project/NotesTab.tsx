@@ -3,7 +3,7 @@ import { ClipboardList, Plus, Edit2, Trash2, X } from 'lucide-react';
 import { Project, Note, NoteType } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { useProjects } from '../../context/ProjectContext';
-import { MOCK_USERS } from '../../constants';
+import { MOCK_USERS, INPUT_LIMITS } from '../../constants';
 
 function NoteTypeBadge({ type }: { type: NoteType }) {
   const styles = {
@@ -108,6 +108,7 @@ export function NotesTab({ project }: NotesTabProps) {
                       required
                       value={noteForm.title}
                       onChange={(e) => setNoteForm({ ...noteForm, title: e.target.value })}
+                      maxLength={INPUT_LIMITS.SHORT_TEXT}
                       className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
                       placeholder="e.g. Database Schema Update"
                     />
@@ -126,12 +127,18 @@ export function NotesTab({ project }: NotesTabProps) {
                  </div>
                </div>
                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Content</label>
+                  <div className="flex justify-between items-center mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Content</label>
+                      <span className={`text-[10px] font-medium ${noteForm.content.length >= INPUT_LIMITS.DESCRIPTION ? 'text-red-500' : 'text-gray-400'}`}>
+                          {noteForm.content.length}/{INPUT_LIMITS.DESCRIPTION}
+                      </span>
+                  </div>
                   <textarea 
                     required
                     rows={5}
                     value={noteForm.content}
                     onChange={(e) => setNoteForm({ ...noteForm, content: e.target.value })}
+                    maxLength={INPUT_LIMITS.DESCRIPTION}
                     className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-y"
                     placeholder="Write your note details here..."
                   />

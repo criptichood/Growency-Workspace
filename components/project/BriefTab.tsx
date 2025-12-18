@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Edit2, Save, X } from 'lucide-react';
 import { Project, ProjectBrief } from '../../types';
 import { useAuth } from '../../context/AuthContext';
+import { INPUT_LIMITS } from '../../constants';
 
 interface BriefTabProps {
   project: Project;
@@ -30,26 +31,38 @@ export function BriefTab({ project, canEdit, onUpdate }: BriefTabProps) {
     setIsEditing(false);
   };
 
-  const InputField = ({ label, field, multiline = false }: { label: string, field: keyof ProjectBrief, multiline?: boolean }) => (
-    <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
-      {multiline ? (
-        <textarea
-          value={formData[field] as string}
-          onChange={(e) => setFormData({ ...formData, [field]: e.target.value })}
-          rows={4}
-          className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-y"
-        />
-      ) : (
-        <input
-          type="text"
-          value={formData[field] as string}
-          onChange={(e) => setFormData({ ...formData, [field]: e.target.value })}
-          className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-        />
-      )}
-    </div>
-  );
+  const InputField = ({ label, field, multiline = false }: { label: string, field: keyof ProjectBrief, multiline?: boolean }) => {
+    const value = formData[field] as string;
+    const maxLength = multiline ? INPUT_LIMITS.DESCRIPTION : INPUT_LIMITS.SHORT_TEXT;
+
+    return (
+      <div className="mb-4">
+        <div className="flex justify-between items-center mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
+          <span className={`text-[10px] font-medium ${value.length >= maxLength ? 'text-red-500' : 'text-gray-400'}`}>
+            {value.length}/{maxLength}
+          </span>
+        </div>
+        {multiline ? (
+          <textarea
+            value={value}
+            onChange={(e) => setFormData({ ...formData, [field]: e.target.value })}
+            maxLength={maxLength}
+            rows={4}
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-y"
+          />
+        ) : (
+          <input
+            type="text"
+            value={value}
+            onChange={(e) => setFormData({ ...formData, [field]: e.target.value })}
+            maxLength={maxLength}
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+          />
+        )}
+      </div>
+    );
+  };
 
   const DisplayField = ({ label, value }: { label: string, value: string }) => (
     <div className="mb-6">

@@ -3,7 +3,7 @@ import { MessageSquare, Send, Paperclip } from 'lucide-react';
 import { Project } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { useProjects } from '../../context/ProjectContext';
-import { MOCK_USERS } from '../../constants';
+import { MOCK_USERS, INPUT_LIMITS } from '../../constants';
 
 interface ChatTabProps {
   project: Project;
@@ -141,6 +141,7 @@ export function ChatTab({ project, initialMessage, onMessageUsed }: ChatTabProps
                      type="text" 
                      value={newMessage}
                      onChange={(e) => setNewMessage(e.target.value)}
+                     maxLength={INPUT_LIMITS.CHAT_MESSAGE}
                      placeholder="Message your team..." 
                      className="w-full bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2 text-sm text-gray-900 dark:white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all pr-10"
                    />

@@ -1,8 +1,11 @@
 import { useState, useRef, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, FolderKanban, FileText, MessageSquare, ClipboardList } from 'lucide-react';
+import { Search, FolderKanban, FileText, MessageSquare, ClipboardList, ChevronRight } from 'lucide-react';
 import { useProjects } from '../../context/ProjectContext';
+import { useAuth } from '../../context/AuthContext';
 import { SearchResult } from '../../types';
+
+const MAX_PREVIEW_ITEMS = 5;
 
 export function GlobalSearch() {
   const [isFocused, setIsFocused] = useState(false);
@@ -10,9 +13,13 @@ export function GlobalSearch() {
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { performSearch } = useProjects();
+  const { user } = useAuth();
 
-  const results = performSearch(query);
-  const hasResults = Object.values(results).some((arr: any) => arr.length > 0);
+  const results = user ? performSearch(query, user.id, user.role) : { projects: [], briefs: [], messages: [], notes: [] };
+  
+  // Calculate total results for the "See all" logic
+  const totalResults = results.projects.length + results.briefs.length + results.messages.length + results.notes.length;
+  const hasResults = totalResults > 0;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -30,14 +37,30 @@ export function GlobalSearch() {
     setIsFocused(false);
   };
 
+  const handleSeeAllClick = () => {
+    navigate(`/search?q=${encodeURIComponent(query)}`);
+    setQuery('');
+    setIsFocused(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+          handleSeeAllClick();
+      }
+  }
+
   const renderSection = (title: string, items: SearchResult[], icon: ReactNode) => {
     if (items.length === 0) return null;
+    
+    // Only show first 5 items in dropdown
+    const displayItems = items.slice(0, MAX_PREVIEW_ITEMS);
+    
     return (
       <div className="py-2">
         <h4 className="px-4 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
           {icon} {title}
         </h4>
-        {items.map(item => (
+        {displayItems.map(item => (
           <button
             key={item.id}
             onClick={() => handleResultClick(item.path)}
@@ -63,19 +86,33 @@ export function GlobalSearch() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsFocused(true)}
+          onKeyDown={handleKeyDown}
           className="bg-transparent border-none outline-none text-sm ml-2 w-full text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500"
         />
       </div>
 
       {isFocused && query && (
-        <div className="absolute top-full right-0 mt-3 w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-gray-200 dark:border-gray-700 max-h-[28rem] overflow-y-auto animate-in fade-in zoom-in-95 duration-200 z-[70]">
+        <div className="absolute top-full right-0 mt-3 w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-gray-200 dark:border-gray-700 max-h-[28rem] overflow-y-auto animate-in fade-in zoom-in-95 duration-200 z-[70] flex flex-col">
            {hasResults ? (
-             <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                {renderSection('Projects', results.projects, <FolderKanban size={10} />)}
-                {renderSection('Briefs', results.briefs, <FileText size={10} />)}
-                {renderSection('Messages', results.messages, <MessageSquare size={10} />)}
-                {renderSection('Notes', results.notes, <ClipboardList size={10} />)}
-             </div>
+             <>
+               <div className="divide-y divide-gray-100 dark:divide-gray-700 overflow-y-auto">
+                  {renderSection('Projects', results.projects, <FolderKanban size={10} />)}
+                  {renderSection('Briefs', results.briefs, <FileText size={10} />)}
+                  {renderSection('Messages', results.messages, <MessageSquare size={10} />)}
+                  {renderSection('Notes', results.notes, <ClipboardList size={10} />)}
+               </div>
+               
+               {/* Show 'See all' if there are more results than we are showing or just as a general footer */}
+               <div className="p-2 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 sticky bottom-0">
+                 <button 
+                    onClick={handleSeeAllClick}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl transition-colors"
+                 >
+                    View all {totalResults} results
+                    <ChevronRight size={12} />
+                 </button>
+               </div>
+             </>
            ) : (
              <div className="p-8 text-center">
                <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-full inline-block mb-3">

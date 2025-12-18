@@ -4,7 +4,9 @@ import { Project, AiChatMessage } from '../types';
 import { streamProjectChat } from '../services/ai';
 import { useAuth } from '../context/AuthContext';
 import { useProjects } from '../context/ProjectContext';
+import { INPUT_LIMITS } from '../constants';
 import ReactMarkdown from 'react-markdown';
+import rehypeSanitize from 'rehype-sanitize';
 
 interface AiAssistantProps {
   project: Project;
@@ -187,6 +189,7 @@ export function AiAssistant({ project }: AiAssistantProps) {
                    {isBot ? (
                      <div className="markdown-content">
                        <ReactMarkdown
+                         rehypePlugins={[rehypeSanitize]}
                          components={{
                            h3: ({node, ...props}) => <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mt-4 mb-2 first:mt-0" {...props} />,
                            ul: ({node, ...props}) => <ul className="space-y-1.5 my-2 list-none pl-0" {...props} />,
@@ -236,6 +239,7 @@ export function AiAssistant({ project }: AiAssistantProps) {
              value={inputValue}
              onChange={(e) => setInputValue(e.target.value)}
              onKeyDown={handleKeyPress}
+             maxLength={INPUT_LIMITS.CHAT_MESSAGE}
              placeholder="Ask about this project..."
              disabled={isStreaming}
              className="flex-1 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder-gray-400 disabled:opacity-50"

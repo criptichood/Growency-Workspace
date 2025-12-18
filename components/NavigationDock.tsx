@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
+import { ChevronsRight, ChevronsLeft } from 'lucide-react';
 import { NAV_ITEMS } from '../constants';
 import { useAuth } from '../context/AuthContext';
 import { useConfig } from '../context/ConfigContext';
@@ -24,9 +24,10 @@ export function NavigationDock() {
     <>
       <button 
         onClick={() => setIsVisible(!isVisible)}
-        className={`lg:hidden fixed left-0 top-1/2 -translate-y-1/2 z-[60] bg-indigo-600 text-white p-2 rounded-r-xl shadow-lg transition-transform duration-300 ${isVisible ? 'translate-x-[64px]' : 'translate-x-0'}`}
+        className={`lg:hidden fixed left-0 top-1/2 -translate-y-1/2 z-[60] bg-white dark:bg-gray-800 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 border-y border-r border-gray-200 dark:border-gray-700 py-2 pr-1.5 pl-0.5 rounded-r-lg shadow-md transition-transform duration-300 ${isVisible ? 'translate-x-[64px]' : 'translate-x-0'}`}
+        aria-label="Toggle Navigation"
       >
-        {isVisible ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+        {isVisible ? <ChevronsLeft size={20} /> : <ChevronsRight size={20} />}
       </button>
 
       <div 
@@ -44,7 +45,7 @@ export function NavigationDock() {
             onClick={toggleDock}
             className="hidden lg:flex absolute top-10 -right-3 w-6 h-6 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full items-center justify-center text-gray-400 hover:text-indigo-600 shadow-md z-10 transition-colors"
           >
-            {config.sidebarExpanded ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
+            {config.sidebarExpanded ? <ChevronsLeft size={12} /> : <ChevronsRight size={12} />}
           </button>
 
           <nav className="space-y-2 flex-1">
