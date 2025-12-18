@@ -121,7 +121,7 @@ function ResultSection({ title, items, icon, emptyMessage }: { title: string, it
     );
 }
 
-function ResultCard({ item }: { item: SearchResult }) {
+const ResultCard: React.FC<{ item: SearchResult }> = ({ item }) => {
     const navigate = useNavigate();
 
     return (

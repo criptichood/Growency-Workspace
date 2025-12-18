@@ -1,3 +1,4 @@
+import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { LucideIcon } from 'lucide-react';
 
@@ -8,7 +9,7 @@ interface DockNavItemProps {
   isExpanded: boolean;
 }
 
-export function DockNavItem({ path, icon: Icon, label, isExpanded }: DockNavItemProps) {
+export const DockNavItem: React.FC<DockNavItemProps> = ({ path, icon: Icon, label, isExpanded }) => {
   return (
     <NavLink
       to={path}
@@ -34,4 +35,4 @@ export function DockNavItem({ path, icon: Icon, label, isExpanded }: DockNavItem
       )}
     </NavLink>
   );
-}
+};

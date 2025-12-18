@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { DashboardWidgetConfig, WidgetId } from '../types';
 
 interface DashboardLayoutContextType {
@@ -19,7 +19,7 @@ const DEFAULT_LAYOUT: DashboardWidgetConfig[] = [
 
 const DashboardLayoutContext = createContext<DashboardLayoutContextType | undefined>(undefined);
 
-export function DashboardLayoutProvider({ children }: { children: ReactNode }) {
+export const DashboardLayoutProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [widgets, setWidgets] = useState<DashboardWidgetConfig[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
 

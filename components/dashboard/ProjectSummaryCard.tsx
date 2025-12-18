@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { Project } from '../../types';
 import { StatusBadge } from '../ui/StatusBadge';
@@ -7,7 +8,7 @@ interface ProjectSummaryCardProps {
   project: Project;
 }
 
-export function ProjectSummaryCard({ project }: ProjectSummaryCardProps) {
+export const ProjectSummaryCard: React.FC<ProjectSummaryCardProps> = ({ project }) => {
   // Only render avatars for users that actually exist in MOCK_USERS to prevent "stray" or broken icons
   const assignedTeam = project.assignedUsers
     .map(id => MOCK_USERS[id])
@@ -68,4 +69,4 @@ export function ProjectSummaryCard({ project }: ProjectSummaryCardProps) {
       </div>
     </Link>
   );
-}
+};

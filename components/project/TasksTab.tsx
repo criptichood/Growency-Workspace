@@ -132,7 +132,7 @@ export function TasksTab({ project }: TasksTabProps) {
   );
 }
 
-function PhaseCard({ phase, isExpanded, isActive, onToggleExpand, onToggleTask, onAddTask, onDeletePhase, onDeleteTask }: { 
+const PhaseCard: React.FC<{ 
   phase: ProjectPhase, 
   projectId: string,
   isExpanded: boolean,
@@ -142,7 +142,7 @@ function PhaseCard({ phase, isExpanded, isActive, onToggleExpand, onToggleTask, 
   onAddTask: (title: string) => void,
   onDeletePhase: () => void,
   onDeleteTask: (tid: string, title: string) => void
-}) {
+}> = ({ phase, isExpanded, isActive, onToggleExpand, onToggleTask, onAddTask, onDeletePhase, onDeleteTask }) => {
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
 

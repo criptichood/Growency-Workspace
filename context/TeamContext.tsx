@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '../types';
 import { MOCK_USERS } from '../constants';
 
@@ -11,7 +11,7 @@ interface TeamContextType {
 
 const TeamContext = createContext<TeamContextType | undefined>(undefined);
 
-export function TeamProvider({ children }: { children: ReactNode }) {
+export const TeamProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 

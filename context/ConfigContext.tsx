@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 export interface AppConfig {
   sidebarExpanded: boolean;
@@ -24,7 +24,7 @@ const DEFAULT_CONFIG: AppConfig = {
 
 const ConfigContext = createContext<ConfigContextType | undefined>(undefined);
 
-export function ConfigProvider({ children }: { children: ReactNode }) {
+export const ConfigProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [config, setConfig] = useState<AppConfig>(() => {
     const stored = localStorage.getItem('growency_app_config');
     if (stored) {

@@ -116,7 +116,7 @@ const INITIAL_RESOURCES: ResourceFile[] = [
   }
 ];
 
-export function ProjectProvider({ children }: { children: ReactNode }) {
+export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [notifications, setNotifications] = useState<SystemNotification[]>([]);
   const [dmThreads, setDmThreads] = useState<DirectMessageThread[]>([]);
@@ -321,7 +321,8 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       messages: [],
       notes: []
     };
-    saveProjects([...projects, newProject] as Project[]);
+    const updatedList: Project[] = [...projects, newProject];
+    saveProjects(updatedList);
   }
 
   function updateProject(id: string, updates: Partial<Project>) {

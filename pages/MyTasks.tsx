@@ -207,7 +207,7 @@ export function MyTasks() {
   );
 }
 
-function TaskCard({ task, onToggle }: { task: AggregatedTask, onToggle: () => void }) {
+const TaskCard: React.FC<{ task: AggregatedTask, onToggle: () => void }> = ({ task, onToggle }) => {
    return (
       <div className="group bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-800 transition-all cursor-pointer" onClick={onToggle}>
          <div className="flex items-start gap-3">

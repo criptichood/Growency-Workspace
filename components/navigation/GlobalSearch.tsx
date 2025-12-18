@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, ReactNode } from 'react';
+import React, { useState, useRef, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, FolderKanban, FileText, MessageSquare, ClipboardList, ChevronRight } from 'lucide-react';
 import { useProjects } from '../../context/ProjectContext';

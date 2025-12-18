@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 import { ArrowUp, ArrowDown, EyeOff, Maximize2, Minimize2, Move } from 'lucide-react';
 import { useDashboardLayout } from '../../context/DashboardLayoutContext';
 import { WidgetId } from '../../types';
@@ -9,7 +9,7 @@ interface DashboardWidgetProps {
   colSpan?: 1 | 2 | 3;
 }
 
-export function DashboardWidget({ id, children, colSpan = 1 }: DashboardWidgetProps) {
+export const DashboardWidget: React.FC<DashboardWidgetProps> = ({ id, children, colSpan = 1 }) => {
   const { isEditMode, reorderWidget, updateWidget, widgets } = useDashboardLayout();
   const widget = widgets.find(w => w.id === id);
 
@@ -77,4 +77,4 @@ export function DashboardWidget({ id, children, colSpan = 1 }: DashboardWidgetPr
       </div>
     </div>
   );
-}
+};
