@@ -44,7 +44,7 @@ export function UserDockMenu({ user, isExpanded, onLogout }: UserDockMenuProps) 
         
         <div className={`flex-1 min-w-0 ml-2.5 text-left overflow-hidden transition-all duration-300 ${isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0'}`}>
            <p className="text-[10px] font-black text-gray-900 dark:text-white truncate uppercase tracking-tighter">@{user.username}</p>
-           <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest truncate">{user.role}</p>
+           <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest truncate">{user.roles.join(', ')}</p>
         </div>
       </button>
 

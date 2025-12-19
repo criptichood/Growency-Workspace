@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MoreVertical, Archive, Trash2, GripVertical, CheckCircle, ExternalLink, Hash, AlertTriangle, ShieldAlert, Undo2 } from 'lucide-react';
+import { MoreVertical, GripVertical, CheckCircle, ExternalLink, Hash, AlertTriangle, ShieldAlert, Undo2, Clock } from 'lucide-react';
 import { Project, ProjectStatus } from '../../types';
 import { StatusBadge } from '../ui/StatusBadge';
 import { useProjects } from '../../context/ProjectContext';
@@ -57,8 +57,7 @@ export function ProjectListTable({ projects }: ProjectListTableProps) {
     setDraggedIdx(null);
   };
 
-  // --- Deletion Logic ---
-
+  // --- Deletion Logic --- (Same as before)
   const handleDeleteAction = (e: React.MouseEvent, project: Project) => {
     e.stopPropagation();
     setActiveMenuId(null);
@@ -69,7 +68,6 @@ export function ProjectListTable({ projects }: ProjectListTableProps) {
     const isDeletionRequested = project.status === 'Deletion Requested';
 
     if (isDeletionRequested) {
-        // If it's already requested, we are treating this click as "Approve Deletion"
         if (canDeleteImmediately) {
             setConfirmConfig({
                 isOpen: true,
@@ -79,13 +77,9 @@ export function ProjectListTable({ projects }: ProjectListTableProps) {
                 variant: 'danger',
                 confirmLabel: 'Permanently Delete'
             });
-        } else {
-            // Should theoretically not reach here if button is hidden, but safe fallback
-            alert("You do not have permission to approve this deletion.");
         }
     } else {
         if (canDeleteImmediately) {
-            // Admin/Creator deleting a normal project -> Immediate Delete
             setConfirmConfig({
                 isOpen: true,
                 title: 'Delete Project',
@@ -95,7 +89,6 @@ export function ProjectListTable({ projects }: ProjectListTableProps) {
                 confirmLabel: 'Delete'
             });
         } else {
-            // Non-Owner/Non-Admin -> Request Deletion
             setConfirmConfig({
                 isOpen: true,
                 title: 'Request Deletion',
@@ -122,8 +115,6 @@ export function ProjectListTable({ projects }: ProjectListTableProps) {
       });
   };
 
-  // ----------------------
-
   const handleArchive = (e: React.MouseEvent, project: Project) => {
     e.stopPropagation();
     setActiveMenuId(null);
@@ -132,24 +123,24 @@ export function ProjectListTable({ projects }: ProjectListTableProps) {
   };
 
   return (
-    <div className="overflow-x-auto relative min-h-[400px]">
-      <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
-        <thead className="bg-gray-50/50 dark:bg-gray-900/30">
+    <div className="overflow-x-auto relative min-h-[400px] px-6 pb-6">
+      <table className="min-w-full border-separate border-spacing-y-3">
+        <thead className="">
           <tr>
-            <th className="w-10 px-4 py-4"></th>
-            <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Code / Project</th>
-            <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Client</th>
-            <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Status</th>
-            <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Progress</th>
-            <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Updated</th>
-            <th className="px-6 py-4 text-right text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Actions</th>
+            <th className="w-10"></th>
+            <th className="px-6 py-2 text-left text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Code / Project</th>
+            <th className="px-6 py-2 text-left text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Client</th>
+            <th className="px-6 py-2 text-left text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
+            <th className="px-6 py-2 text-left text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Progress</th>
+            <th className="px-6 py-2 text-left text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Updated</th>
+            <th className="px-6 py-2 text-right text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Actions</th>
           </tr>
         </thead>
-        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-50 dark:divide-gray-700">
+        <tbody>
           {projects.length === 0 ? (
             <tr>
               <td colSpan={7} className="px-6 py-20 text-center">
-                <div className="flex flex-col items-center justify-center text-gray-400">
+                <div className="flex flex-col items-center justify-center text-slate-400">
                    <Gaps size={48} className="mb-4 opacity-10" />
                    <p className="text-sm font-bold">No matching projects found</p>
                 </div>
@@ -170,76 +161,76 @@ export function ProjectListTable({ projects }: ProjectListTableProps) {
                   onDragOver={(e) => handleDragOver(e, index)}
                   onDragEnd={handleDragEnd}
                   onClick={() => handleRowClick(project.code)}
-                  className={`group cursor-pointer transition-all duration-200 hover:bg-indigo-50/30 dark:hover:bg-indigo-900/10 ${
-                    draggedIdx === index ? 'opacity-30 bg-indigo-100 dark:bg-indigo-900/40' : ''
+                  className={`group cursor-pointer transition-all duration-200 transform hover:-translate-y-0.5 relative rounded-2xl bg-white dark:bg-[#151921] shadow-sm hover:shadow-md border border-slate-200 dark:border-slate-800 ${
+                    draggedIdx === index ? 'opacity-30' : ''
                   }`}
                 >
-                  <td className="px-4 py-4">
-                    <div className="text-gray-300 dark:text-gray-600 group-hover:text-indigo-400 cursor-grab active:cursor-grabbing p-1 transition-colors">
+                  <td className="px-2 py-4 rounded-l-2xl border-l border-y border-transparent">
+                    <div className="text-slate-300 dark:text-slate-600 group-hover:text-indigo-400 cursor-grab active:cursor-grabbing p-1 transition-colors flex justify-center">
                       <GripVertical size={18} />
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap border-y border-transparent">
                     <div className="flex items-center gap-4">
-                      <div className="hidden sm:flex flex-col items-center justify-center w-12 h-12 bg-gray-50 dark:bg-gray-900/40 rounded-xl border border-gray-100 dark:border-gray-700 group-hover:border-indigo-200 transition-colors">
-                          <Hash size={12} className="text-indigo-500 mb-1" />
-                          <span className="text-[8px] font-black uppercase tracking-tighter text-gray-400">{project.code}</span>
+                      <div className="hidden sm:flex flex-col items-center justify-center w-10 h-10 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 group-hover:border-indigo-200 dark:group-hover:border-indigo-800 transition-colors">
+                          <Hash size={12} className="text-indigo-500 mb-0.5" />
+                          <span className="text-[8px] font-black uppercase tracking-tighter text-slate-400">{project.code}</span>
                       </div>
                       <div className="flex flex-col">
-                          <div className="text-sm font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{project.name}</div>
-                          <div className="text-[10px] text-gray-400 dark:text-gray-500 font-medium truncate max-w-[200px] mt-0.5">{project.description}</div>
+                          <div className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{project.name}</div>
+                          <div className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate max-w-[200px] mt-0.5">{project.description}</div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-xs font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700/50 px-2 py-1 rounded-lg inline-block border border-gray-100 dark:border-gray-700">{project.clientName}</div>
+                  <td className="px-6 py-4 whitespace-nowrap border-y border-transparent">
+                    <div className="text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-[#1e222e] px-3 py-1.5 rounded-lg inline-block border border-slate-200 dark:border-slate-700">{project.clientName}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap border-y border-transparent">
                     <StatusBadge status={project.status} className="!text-[9px] uppercase tracking-tighter" />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap border-y border-transparent">
                     <div className="w-32">
-                      <div className="flex items-center justify-between text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">
+                      <div className="flex items-center justify-between text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">
                         <span>{project.progress}%</span>
                       </div>
-                      <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1 overflow-hidden">
+                      <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
                         <div 
-                          className={`h-full transition-all duration-1000 ${project.status === 'Completed' ? 'bg-green-500' : 'bg-indigo-600 dark:bg-indigo-500'}`} 
+                          className={`h-full transition-all duration-1000 shadow-[0_0_10px_rgba(99,102,241,0.3)] ${project.status === 'Completed' ? 'bg-emerald-500' : 'bg-indigo-600 dark:bg-indigo-500'}`} 
                           style={{ width: `${project.progress}%` }} 
                         />
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+                  <td className="px-6 py-4 whitespace-nowrap text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-mono border-y border-transparent">
                     {new Date(project.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right relative">
+                  <td className="px-6 py-4 whitespace-nowrap text-right rounded-r-2xl border-r border-y border-transparent relative">
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
                         setActiveMenuId(activeMenuId === project.id ? null : project.id);
                       }}
-                      className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all"
+                      className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-all"
                     >
                       <MoreVertical size={18} />
                     </button>
                     
                     {activeMenuId === project.id && (
                       <div 
-                        className="absolute right-6 top-12 w-56 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 p-2 z-[60] animate-in zoom-in-95 duration-200"
+                        className="absolute right-6 top-12 w-56 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-2 z-[60] animate-in zoom-in-95 duration-200"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <button 
                           onClick={() => navigate(`/projects/${project.code}`)}
-                          className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
+                          className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-colors"
                         >
-                          <ExternalLink size={14} className="text-gray-400" />
+                          <ExternalLink size={14} className="text-slate-400" />
                           Open Details
                         </button>
                         
                         <button 
                           onClick={(e) => handleArchive(e, project)}
-                          className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
+                          className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-colors"
                         >
                           {project.status === 'Completed' ? (
                             <><Clock size={14} className="text-amber-500" /> Re-open</>
@@ -248,7 +239,7 @@ export function ProjectListTable({ projects }: ProjectListTableProps) {
                           )}
                         </button>
 
-                        <div className="h-px bg-gray-100 dark:bg-gray-700 my-1 mx-2" />
+                        <div className="h-px bg-slate-100 dark:bg-slate-700 my-1 mx-2" />
                         
                         {/* DELETION CONTROLS */}
                         {isDeletionRequested ? (
@@ -264,7 +255,7 @@ export function ProjectListTable({ projects }: ProjectListTableProps) {
                                         </button>
                                         <button 
                                             onClick={(e) => handleRejectDeletion(e, project)}
-                                            className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
+                                            className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-colors"
                                         >
                                             <Undo2 size={14} />
                                             Reject Request
@@ -286,7 +277,6 @@ export function ProjectListTable({ projects }: ProjectListTableProps) {
                                     : 'text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20'
                                 }`}
                             >
-                                {canDeleteImmediately ? <Trash2 size={14} /> : <AlertTriangle size={14} />}
                                 {canDeleteImmediately ? 'Delete Project' : 'Request Deletion'}
                             </button>
                         )}
@@ -324,14 +314,6 @@ function Gaps({ size, className }: { size: number, className?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
       <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
-    </svg>
-  );
-}
-
-function Clock({ size, className }: { size: number, className?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
     </svg>
   );
 }

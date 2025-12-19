@@ -1,4 +1,5 @@
-import { LayoutDashboard, FolderKanban, Settings, Users, CheckSquare, Calendar as CalendarIcon, Video, FileBox, History } from 'lucide-react';
+
+import { LayoutDashboard, FolderKanban, Settings, Users, CheckSquare, Calendar as CalendarIcon, Video, FileBox, History, Shield } from 'lucide-react';
 import { NavItem, Project, User, UserStatusType } from './types';
 
 export const APP_NAME = 'Growency';
@@ -60,6 +61,12 @@ export const NAV_ITEMS: NavItem[] = [
     icon: Users,
   },
   {
+    label: 'Users', // SuperAdmin Only
+    path: '/users',
+    icon: Shield,
+    restrictedTo: ['SuperAdmin']
+  },
+  {
     label: 'History',
     path: '/history',
     icon: History,
@@ -69,11 +76,11 @@ export const NAV_ITEMS: NavItem[] = [
 export const MOCK_USERS: Record<string, User> = {
   '1': {
     id: '1',
-    name: 'Admin User',
-    username: 'admin_grow',
+    name: 'Alexandra Admin',
+    username: 'alex_super',
     email: 'admin@growency.com',
-    role: 'Admin',
-    avatarUrl: 'https://picsum.photos/seed/admin123/200/200',
+    roles: ['SuperAdmin', 'Admin', 'Manager'],
+    avatarUrl: 'https://i.pravatar.cc/150?u=1',
     status: 'Available',
     twoFactorEnabled: true,
   },
@@ -82,8 +89,8 @@ export const MOCK_USERS: Record<string, User> = {
     name: 'Sarah Sales',
     username: 'sarah_s',
     email: 'sales@growency.com',
-    role: 'Sales',
-    avatarUrl: 'https://picsum.photos/seed/sarah88/200/200',
+    roles: ['Manager', 'Sales'],
+    avatarUrl: 'https://i.pravatar.cc/150?u=2',
     status: 'Busy',
   },
   '3': {
@@ -91,28 +98,100 @@ export const MOCK_USERS: Record<string, User> = {
     name: 'Dave Developer',
     username: 'dave_dev',
     email: 'dev@growency.com',
-    role: 'Developer',
-    avatarUrl: 'https://picsum.photos/seed/dave44/200/200',
+    roles: ['Developer'],
+    avatarUrl: 'https://i.pravatar.cc/150?u=3',
     status: 'Away',
   },
   '4': { 
     id: '4', 
-    name: 'User 4', 
-    username: 'user4',
-    email: 'u4@test.com', 
-    role: 'Developer', 
-    avatarUrl: 'https://picsum.photos/seed/user4/200/200',
+    name: 'Mike Manager', 
+    username: 'mike_lead',
+    email: 'mike@growency.com', 
+    roles: ['Manager', 'Developer'], // Technical Lead
+    avatarUrl: 'https://i.pravatar.cc/150?u=4',
     status: 'Available',
   },
   '5': { 
     id: '5', 
-    name: 'User 5', 
-    username: 'user5',
-    email: 'u5@test.com', 
-    role: 'Developer', 
-    avatarUrl: 'https://picsum.photos/seed/user5/200/200',
+    name: 'Emily Engineer', 
+    username: 'emily_e',
+    email: 'emily@growency.com', 
+    roles: ['Developer'], 
+    avatarUrl: 'https://i.pravatar.cc/150?u=5',
     status: 'In a Meeting',
   },
+  '6': {
+    id: '6',
+    name: 'Gary General',
+    username: 'gary_ops',
+    email: 'gary@growency.com',
+    roles: ['Admin'], // Operations Admin
+    avatarUrl: 'https://i.pravatar.cc/150?u=6',
+    status: 'Available',
+  },
+  '7': {
+    id: '7',
+    name: 'Fiona Frontend',
+    username: 'fiona_ui',
+    email: 'fiona@growency.com',
+    roles: ['Developer'],
+    avatarUrl: 'https://i.pravatar.cc/150?u=7',
+    status: 'Do Not Disturb',
+  },
+  '8': {
+    id: '8',
+    name: 'Brian Backend',
+    username: 'brian_api',
+    email: 'brian@growency.com',
+    roles: ['Developer'],
+    avatarUrl: 'https://i.pravatar.cc/150?u=8',
+    status: 'Away',
+  },
+  '9': {
+    id: '9',
+    name: 'Chloe Creative',
+    username: 'chloe_design',
+    email: 'chloe@growency.com',
+    roles: ['Sales', 'Developer'], // Creative Technologist
+    avatarUrl: 'https://i.pravatar.cc/150?u=9',
+    status: 'Available',
+  },
+  '10': {
+    id: '10',
+    name: 'Kevin QA',
+    username: 'kevin_test',
+    email: 'kevin@growency.com',
+    roles: ['Developer'],
+    avatarUrl: 'https://i.pravatar.cc/150?u=10',
+    status: 'Busy',
+  },
+  '11': {
+    id: '11',
+    name: 'Laura Legal',
+    username: 'laura_l',
+    email: 'laura@growency.com',
+    roles: ['Admin'],
+    avatarUrl: 'https://i.pravatar.cc/150?u=11',
+    status: 'Available',
+  },
+  '12': {
+    id: '12',
+    name: 'Tom Trainee',
+    username: 'tom_intern',
+    email: 'tom@growency.com',
+    roles: ['Developer'],
+    avatarUrl: 'https://i.pravatar.cc/150?u=12',
+    status: 'Available',
+  },
+  '13': {
+    id: '13',
+    name: 'System Bot',
+    username: 'bot',
+    email: 'bot@growency.com',
+    roles: ['Admin'],
+    avatarUrl: 'https://ui-avatars.com/api/?name=System+Bot&background=6366f1&color=fff',
+    status: 'Available',
+  }
 };
 
 export const INITIAL_PROJECTS: Project[] = [
@@ -127,7 +206,7 @@ export const INITIAL_PROJECTS: Project[] = [
     updatedAt: '2023-10-25T14:00:00Z',
     dueDate: '2023-12-15',
     createdBy: '1',
-    assignedUsers: ['1', '2', '3'],
+    assignedUsers: ['1', '2', '3', '7'],
     description: 'Complete overhaul of the corporate website focusing on accessibility and modern design trends.',
     phases: [
       {
@@ -215,7 +294,7 @@ export const INITIAL_PROJECTS: Project[] = [
     updatedAt: '2023-11-01T09:00:00Z',
     dueDate: '2024-01-20',
     createdBy: '2',
-    assignedUsers: ['3', '4'],
+    assignedUsers: ['3', '4', '8'],
     description: 'Initial planning and wireframing for the new iOS and Android application.',
     phases: [
       {
@@ -276,7 +355,7 @@ export const INITIAL_PROJECTS: Project[] = [
     updatedAt: '2023-10-01T17:00:00Z',
     dueDate: '2023-10-01',
     createdBy: '2',
-    assignedUsers: ['2', '4', '5'],
+    assignedUsers: ['2', '4', '5', '9'],
     description: 'Holiday season digital marketing push across social media and email channels.',
     phases: [
       {
@@ -337,7 +416,7 @@ export const INITIAL_PROJECTS: Project[] = [
     updatedAt: '2023-12-14T16:00:00Z',
     dueDate: '2024-02-28',
     createdBy: '1',
-    assignedUsers: ['3'],
+    assignedUsers: ['3', '5', '10'],
     description: 'Development of an internal tool to automate compliance auditing processes.',
     phases: [
       {

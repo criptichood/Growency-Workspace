@@ -103,7 +103,7 @@ export function ProfileCard({ user }: ProfileCardProps) {
             </div>
             <div>
               <p className="text-sm font-black text-gray-900 dark:text-white">@{user.username}</p>
-              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">{user.role} • Joined 2023</p>
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">{user.roles.join(', ')} • Joined 2023</p>
             </div>
           </div>
 

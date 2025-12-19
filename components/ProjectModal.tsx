@@ -1,9 +1,11 @@
+
 import { useState, useEffect, FormEvent } from 'react';
 import { X, Save, Calendar, Loader2, Check, Hash, Sparkles } from 'lucide-react';
 import { Project, ProjectStatus } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { useTeam } from '../context/TeamContext';
 import { INPUT_LIMITS } from '../constants';
+import { SearchableDropdown } from './ui/SearchableDropdown';
 
 interface ProjectModalProps {
   isOpen: boolean;
@@ -13,13 +15,20 @@ interface ProjectModalProps {
   title: string;
 }
 
+const STATUS_OPTIONS: { value: ProjectStatus, label: string }[] = [
+  { value: 'Pending', label: 'Pending' },
+  { value: 'In Progress', label: 'In Progress' },
+  { value: 'On Hold', label: 'On Hold' },
+  { value: 'Completed', label: 'Completed' }
+];
+
 export function ProjectModal({ isOpen, onClose, onSubmit, initialData, title }: ProjectModalProps) {
   const { user } = useAuth();
   const { users } = useTeam();
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   
-  const isAdmin = user?.role === 'Admin';
+  const isAdmin = user?.roles.includes('Admin');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -53,7 +62,6 @@ export function ProjectModal({ isOpen, onClose, onSubmit, initialData, title }: 
           status: 'Pending',
           dueDate: '',
           description: '',
-          // If admin, start empty. If non-admin creator, auto-assign self (will be hidden from UI but submitted).
           assignedUsers: user ? [user.id] : []
         });
       }
@@ -77,16 +85,11 @@ export function ProjectModal({ isOpen, onClose, onSubmit, initialData, title }: 
         ...formData,
         code: formData.code.toUpperCase().replace(/\s/g, '-'),
         createdBy: initialData?.createdBy || user?.id || '1',
-        // Ensure at least the creator or current user is assigned if list is empty
         assignedUsers: formData.assignedUsers.length > 0 ? formData.assignedUsers : [user?.id || '1']
     };
 
-    // Simulate saving delay for animation
     await new Promise(resolve => setTimeout(resolve, 800));
-    
     setSaveSuccess(true);
-    
-    // Tiny extra delay to show success state
     await new Promise(resolve => setTimeout(resolve, 400));
 
     onSubmit(finalData);
@@ -176,18 +179,13 @@ export function ProjectModal({ isOpen, onClose, onSubmit, initialData, title }: 
               </div>
 
               <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Status</label>
-                <select
+                <SearchableDropdown
+                  label="Status"
                   value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value as ProjectStatus })}
-                  className="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/40 text-gray-900 dark:text-white px-5 py-3 text-sm font-bold focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all appearance-none cursor-pointer"
-                >
-                  <option value="Pending">Pending</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="On Hold">On Hold</option>
-                  <option value="Completed">Completed</option>
-                  {/* We do not show 'Deletion Requested' here as it's a workflow state */}
-                </select>
+                  onChange={(val) => setFormData({ ...formData, status: val as ProjectStatus })}
+                  options={STATUS_OPTIONS}
+                  searchable={false}
+                />
               </div>
 
               <div>
@@ -199,7 +197,7 @@ export function ProjectModal({ isOpen, onClose, onSubmit, initialData, title }: 
                     required
                     value={formData.dueDate}
                     onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                    className="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/40 text-gray-900 dark:text-white pl-12 pr-5 py-3 text-sm font-bold focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all"
+                    className="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/40 text-gray-900 dark:text-white pl-12 pr-5 py-3.5 text-sm font-bold focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all"
                   />
                 </div>
               </div>

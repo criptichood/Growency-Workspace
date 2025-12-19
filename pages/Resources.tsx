@@ -1,12 +1,14 @@
+
 import React, { useState, useRef } from 'react';
 import { 
   FileBox, Search, Plus, FolderOpen, Image as ImageIcon, FileText, 
-  FileCode, Download, Trash2, X, MoreVertical, HardDrive, Filter, ChevronDown
+  FileCode, Download, Trash2, Filter, HardDrive, X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useProjects } from '../context/ProjectContext';
 import { useTeam } from '../context/TeamContext';
 import { ResourceCategory } from '../types';
+import { SearchableDropdown } from '../components/ui/SearchableDropdown';
 
 const CATEGORIES: ResourceCategory[] = ['General', 'Brand', 'HR', 'Sales', 'Engineering', 'Templates'];
 
@@ -86,6 +88,11 @@ export function Resources() {
     return <FileText className="text-gray-400" />;
   };
 
+  const categoryOptions = [
+    { value: 'All', label: 'All Categories' },
+    ...CATEGORIES.map(cat => ({ value: cat, label: cat }))
+  ];
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-20">
       {/* Header */}
@@ -112,19 +119,14 @@ export function Resources() {
               />
            </div>
            
-           <div className="relative">
-             <Filter size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-             <select
-               value={activeCategory}
-               onChange={(e) => setActiveCategory(e.target.value as ResourceCategory | 'All')}
-               className="pl-10 pr-10 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all shadow-sm appearance-none cursor-pointer text-gray-700 dark:text-gray-200 min-w-[160px]"
-             >
-               <option value="All">All Categories</option>
-               {CATEGORIES.map(cat => (
-                 <option key={cat} value={cat}>{cat}</option>
-               ))}
-             </select>
-             <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+           <div className="min-w-[180px]">
+             <SearchableDropdown
+                icon={<Filter size={16} />}
+                value={activeCategory}
+                onChange={(val) => setActiveCategory(val as ResourceCategory | 'All')}
+                options={categoryOptions}
+                searchable={false}
+             />
            </div>
 
            {canUpload && (
@@ -137,7 +139,7 @@ export function Resources() {
                />
                <button 
                  onClick={() => fileInputRef.current?.click()}
-                 className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all active:scale-95 whitespace-nowrap"
+                 className="flex items-center gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all active:scale-95 whitespace-nowrap"
                >
                  <Plus size={18} />
                  Upload

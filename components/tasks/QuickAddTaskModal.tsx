@@ -1,9 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
-import { X, Check, Loader2, Plus, Briefcase, ListTodo, ChevronDown } from 'lucide-react';
+import { X, Loader2, Plus, Briefcase, ListTodo, User as UserIcon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useProjects } from '../../context/ProjectContext';
-import { Project } from '../../types';
+import { useTeam } from '../../context/TeamContext';
 import { INPUT_LIMITS } from '../../constants';
+import { SearchableDropdown } from '../ui/SearchableDropdown';
 
 interface QuickAddTaskModalProps {
   isOpen: boolean;
@@ -13,19 +15,30 @@ interface QuickAddTaskModalProps {
 export function QuickAddTaskModal({ isOpen, onClose }: QuickAddTaskModalProps) {
   const { user } = useAuth();
   const { projects, addTaskToPhase, addPhase } = useProjects();
+  const { users } = useTeam();
   const [selectedProjectId, setSelectedProjectId] = useState('');
   const [selectedPhaseId, setSelectedPhaseId] = useState('');
   const [taskTitle, setTaskTitle] = useState('');
+  const [assignedTo, setAssignedTo] = useState('');
   const [isCreatingPhase, setIsCreatingPhase] = useState(false);
   const [newPhaseName, setNewPhaseName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Permission Logic
+  const canManageTasks = user?.roles.some(r => ['SuperAdmin', 'Admin', 'Manager'].includes(r));
+
   // Filter projects assigned to the user
   const availableProjects = projects.filter(p => 
-    user?.role === 'Admin' || (user && p.assignedUsers.includes(user.id))
+    user?.roles.some(r => ['SuperAdmin', 'Admin', 'Manager'].includes(r)) || 
+    (user && p.assignedUsers.includes(user.id))
   );
 
   const selectedProject = projects.find(p => p.id === selectedProjectId);
+
+  // Filter assignable users
+  const assignableUsers = selectedProject 
+    ? users.filter(u => selectedProject.assignedUsers.includes(u.id))
+    : [];
 
   // Reset state when opening/closing
   useEffect(() => {
@@ -33,11 +46,12 @@ export function QuickAddTaskModal({ isOpen, onClose }: QuickAddTaskModalProps) {
       setSelectedProjectId('');
       setSelectedPhaseId('');
       setTaskTitle('');
+      setAssignedTo(user?.id || ''); // Default to self
       setIsCreatingPhase(false);
       setNewPhaseName('');
       setIsSubmitting(false);
     }
-  }, [isOpen]);
+  }, [isOpen, user]);
 
   // Auto-select first project if available
   useEffect(() => {
@@ -77,11 +91,30 @@ export function QuickAddTaskModal({ isOpen, onClose }: QuickAddTaskModalProps) {
       targetPhaseId = addPhase(selectedProjectId, newPhaseName);
     }
 
-    addTaskToPhase(selectedProjectId, targetPhaseId, taskTitle, user.id); // Auto-assign to self
+    const assignee = canManageTasks ? assignedTo : user.id;
+
+    addTaskToPhase(selectedProjectId, targetPhaseId, taskTitle, assignee);
     
     setIsSubmitting(false);
     onClose();
   };
+
+  // Maps for Dropdown Options
+  const projectOptions = availableProjects.map(p => ({
+    value: p.id,
+    label: p.name,
+    subtitle: p.code
+  }));
+
+  const phaseOptions = selectedProject 
+    ? selectedProject.phases.map(ph => ({ value: ph.id, label: ph.name }))
+    : [];
+
+  const userOptions = assignableUsers.map(u => ({
+    value: u.id,
+    label: u.name,
+    subtitle: u.roles.join(', ')
+  }));
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -103,23 +136,14 @@ export function QuickAddTaskModal({ isOpen, onClose }: QuickAddTaskModalProps) {
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
           
           {/* Project Selection */}
-          <div>
-            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Project</label>
-            <div className="relative">
-                <Briefcase size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                <select
-                    value={selectedProjectId}
-                    onChange={(e) => setSelectedProjectId(e.target.value)}
-                    className="w-full pl-11 pr-10 py-3.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-2xl appearance-none text-sm font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all cursor-pointer"
-                >
-                    {availableProjects.length === 0 && <option value="">No active projects</option>}
-                    {availableProjects.map(p => (
-                        <option key={p.id} value={p.id}>{p.name} ({p.code})</option>
-                    ))}
-                </select>
-                <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-            </div>
-          </div>
+          <SearchableDropdown
+            label="Project"
+            icon={<Briefcase size={16} />}
+            value={selectedProjectId}
+            onChange={setSelectedProjectId}
+            options={projectOptions}
+            placeholder={availableProjects.length === 0 ? "No active projects" : "Select Project..."}
+          />
 
           {/* Phase Selection / Creation */}
           <div>
@@ -146,28 +170,32 @@ export function QuickAddTaskModal({ isOpen, onClose }: QuickAddTaskModalProps) {
                     />
                  </div>
              ) : (
-                 <div className="relative animate-in fade-in slide-in-from-right-2 duration-200">
-                    <ListTodo size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <select
+                 <div className="animate-in fade-in slide-in-from-right-2 duration-200">
+                    <SearchableDropdown
+                        icon={<ListTodo size={16} />}
                         value={selectedPhaseId}
-                        onChange={(e) => setSelectedPhaseId(e.target.value)}
+                        onChange={setSelectedPhaseId}
+                        options={phaseOptions}
                         disabled={!selectedProject || selectedProject.phases.length === 0}
-                        className="w-full pl-11 pr-10 py-3.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-2xl appearance-none text-sm font-bold text-gray-900 dark:text-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all cursor-pointer disabled:opacity-50"
-                    >
-                        {!selectedProject ? (
-                            <option>Select a project first</option>
-                        ) : selectedProject.phases.length === 0 ? (
-                            <option>No phases found</option>
-                        ) : (
-                            selectedProject.phases.map(ph => (
-                                <option key={ph.id} value={ph.id}>{ph.name}</option>
-                            ))
-                        )}
-                    </select>
-                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                        placeholder={!selectedProject ? "Select a project first" : "Select Phase..."}
+                        searchable={false} // Usually phases are few
+                    />
                  </div>
              )}
           </div>
+
+          {/* Assignment Selection (Restricted) */}
+          {canManageTasks && (
+            <SearchableDropdown
+              label="Assign To"
+              icon={<UserIcon size={16} />}
+              value={assignedTo}
+              onChange={setAssignedTo}
+              options={userOptions}
+              disabled={!selectedProject}
+              placeholder="Select Team Member..."
+            />
+          )}
 
           {/* Task Title */}
           <div>

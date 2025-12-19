@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Send, Search, MessageSquare, ChevronLeft, Paperclip, File, Image as ImageIcon, Download, AlertCircle } from 'lucide-react';
 import { useProjects } from '../../context/ProjectContext';
@@ -9,7 +10,7 @@ import { DirectMessageThread, Attachment } from '../../types';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 export function DirectMessageDrawer() {
-  const { isDmDrawerOpen, toggleDmDrawer, activeDmThreadId, dmThreads, sendDmMessage, openDmWithUser } = useProjects();
+  const { isDmDrawerOpen, toggleDmDrawer, activeDmThreadId, dmThreads, sendDmMessage, openDmWithUser, closeActiveDmThread } = useProjects();
   const { user } = useAuth();
   const { users } = useTeam();
   const [activeThread, setActiveThread] = useState<DirectMessageThread | null>(null);
@@ -128,7 +129,7 @@ export function DirectMessageDrawer() {
         <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700 shrink-0">
           {activeThread ? (
              <div className="flex items-center gap-2">
-                <button onClick={() => openDmWithUser(user.id, user.id)} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                <button onClick={closeActiveDmThread} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
                    <ChevronLeft size={20} className="text-gray-500" />
                 </button>
                 <div className="flex items-center gap-3">

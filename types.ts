@@ -1,12 +1,14 @@
+
 import { LucideIcon } from 'lucide-react';
 
 export interface NavItem {
   label: string;
   path: string;
   icon: LucideIcon;
+  restrictedTo?: Role[]; // Optional: restrict nav item to specific roles
 }
 
-export type Role = 'Admin' | 'Sales' | 'Developer';
+export type Role = 'SuperAdmin' | 'Admin' | 'Manager' | 'Sales' | 'Developer';
 
 export type UserStatusType = 'Available' | 'Busy' | 'Away' | 'In a Meeting' | 'Do Not Disturb';
 
@@ -15,7 +17,7 @@ export interface User {
   name: string; // This will act as Full Name
   username: string; // Unique handle
   email: string;
-  role: Role;
+  roles: Role[]; // Changed from single role to array
   avatarUrl?: string;
   status: UserStatusType;
   customStatus?: string;

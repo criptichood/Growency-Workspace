@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bell, ChevronRight, Home, MessageSquareText, Check, Trash2, Info, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Bell, ChevronRight, Home, MessageSquareText, Check, Info, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useProjects } from '../context/ProjectContext';
@@ -52,9 +52,21 @@ export function TopBar() {
       }
   };
 
+  const isActive = (path: string) => {
+      if (path === '/' && location.pathname === '/dashboard') return true;
+      return location.pathname.startsWith(path);
+  };
+
+  const quickLinks = [
+      { path: '/projects', label: 'Projects' },
+      { path: '/my-tasks', label: 'My Tasks' },
+      { path: '/team', label: 'Team' },
+  ];
+
   return (
-    <header className="sticky top-0 z-30 h-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 flex items-center justify-between transition-colors">
-      <div className="flex items-center gap-4">
+    <header className="sticky top-0 z-30 h-16 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 flex items-center justify-between transition-colors supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-gray-900/60">
+      {/* Left: Breadcrumbs */}
+      <div className="flex items-center gap-4 shrink-0">
         <nav className="hidden sm:flex items-center space-x-2 text-sm font-medium">
           <Link to="/" className="text-gray-400 hover:text-indigo-600 transition-colors">
             <Home size={16} />
@@ -82,15 +94,45 @@ export function TopBar() {
             );
           })}
         </nav>
+        
         <div className="sm:hidden font-black text-gray-900 dark:text-white uppercase tracking-tighter">
           {pathnames[pathnames.length - 1]?.replace(/-/g, ' ') || 'Dashboard'}
         </div>
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-4">
-        <div className="hidden md:block">
+      {/* Center: Quick Navigation (Refined Segmented Control) */}
+      <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <nav className="flex items-center p-1 bg-slate-200/50 dark:bg-gray-900/50 border border-slate-200/50 dark:border-gray-700/50 rounded-full backdrop-blur-md shadow-inner">
+              {quickLinks.map(link => (
+                  <Link 
+                    key={link.path} 
+                    to={link.path}
+                    className={`px-5 py-1.5 rounded-full text-xs font-bold transition-all duration-300 ease-out ${
+                        isActive(link.path)
+                        ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.1)] ring-1 ring-black/5 dark:ring-white/10 scale-105'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/40 dark:hover:bg-gray-700/40'
+                    }`}
+                  >
+                      {link.label}
+                  </Link>
+              ))}
+          </nav>
+      </div>
+
+      {/* Right: Actions */}
+      <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+        <div className="hidden lg:block">
           <GlobalSearch />
         </div>
+        
+        {/* Mobile Search Trigger */}
+        <button 
+            onClick={() => navigate('/search')}
+            className="lg:hidden p-2.5 text-gray-500 hover:text-indigo-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 rounded-xl transition-all"
+        >
+            <Home className="hidden" /> 
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </button>
 
         <button 
           onClick={() => toggleDmDrawer(true)}

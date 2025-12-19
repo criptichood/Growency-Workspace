@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { Dashboard } from './pages/Dashboard';
@@ -13,6 +14,7 @@ import { Calendar } from './pages/Calendar';
 import { Meetings } from './pages/Meetings';
 import { Resources } from './pages/Resources';
 import { History } from './pages/History';
+import { UserManagement } from './pages/UserManagement';
 import { AuthProvider } from './context/AuthContext';
 import { TeamProvider } from './context/TeamContext';
 import { ProjectProvider } from './context/ProjectContext';
@@ -48,6 +50,7 @@ export default function App() {
                       <Route path="resources" element={<Resources />} />
                       <Route path="history" element={<History />} />
                       <Route path="team" element={<Team />} />
+                      <Route path="users" element={<UserManagement />} />
                       <Route path="settings" element={<Settings />} />
                       <Route path="search" element={<SearchPage />} />
                     </Route>

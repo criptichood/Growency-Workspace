@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ChevronsRight, ChevronsLeft } from 'lucide-react';
@@ -51,6 +52,12 @@ export function NavigationDock() {
 
   const toggleDock = () => updateConfig({ sidebarExpanded: !config.sidebarExpanded });
 
+  const filteredNavItems = NAV_ITEMS.filter(item => {
+    if (!item.restrictedTo) return true;
+    if (!user) return false;
+    return user.roles.some(role => item.restrictedTo?.includes(role));
+  });
+
   return (
     <>
       <button 
@@ -82,7 +89,7 @@ export function NavigationDock() {
           </button>
 
           <nav className="space-y-2 flex-1">
-            {NAV_ITEMS.map((item) => (
+            {filteredNavItems.map((item) => (
               <DockNavItem 
                 key={item.path}
                 {...item}

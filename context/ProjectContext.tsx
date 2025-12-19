@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Project, ProjectBrief, ChatMessage, Note, SearchResults, SearchResult, ProjectTask, ProjectPhase, AiChatMessage, Role, SystemNotification, DirectMessageThread, Attachment, ResourceFile, ResourceCategory } from '../types';
 import { INITIAL_PROJECTS, MOCK_USERS } from '../constants';
@@ -49,6 +50,7 @@ interface ProjectContextType {
   activeDmThreadId: string | null;
   toggleDmDrawer: (isOpen: boolean) => void;
   openDmWithUser: (currentUserId: string, targetUserId: string) => void;
+  closeActiveDmThread: () => void;
   sendDmMessage: (threadId: string, text: string, userId: string, attachments?: Attachment[]) => void;
   
   // Resources
@@ -239,6 +241,10 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
       saveDms([newThread, ...dmThreads]);
       setActiveDmThreadId(newThread.id);
     }
+  }
+
+  function closeActiveDmThread() {
+    setActiveDmThreadId(null);
   }
 
   function sendDmMessage(threadId: string, text: string, userId: string, attachments: Attachment[] = []) {
@@ -680,7 +686,7 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
       performSearch, 
       aiChats, updateAiChat,
       notifications, addNotification, markNotificationAsRead, markAllNotificationsAsRead,
-      dmThreads, isDmDrawerOpen, activeDmThreadId, toggleDmDrawer, openDmWithUser, sendDmMessage,
+      dmThreads, isDmDrawerOpen, activeDmThreadId, toggleDmDrawer, openDmWithUser, closeActiveDmThread, sendDmMessage,
       resources, addResource, deleteResource,
       isLoading 
     }}>

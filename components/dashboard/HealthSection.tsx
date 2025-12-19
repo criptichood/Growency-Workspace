@@ -9,62 +9,58 @@ interface HealthSectionProps {
 export function HealthSection({ completedCount, inProgressCount, pendingCount }: HealthSectionProps) {
   const total = completedCount + inProgressCount + pendingCount || 1;
   
-  // Calculate percentages for CSS conic gradient
   const completedPct = (completedCount / total) * 100;
   const inProgressPct = (inProgressCount / total) * 100;
   
-  // CSS Conic Gradient Logic
-  // Green starts at 0, goes to completedPct
-  // Blue starts at completedPct, goes to completedPct + inProgressPct
-  // Yellow takes the rest
   const gradient = `conic-gradient(
-    #22c55e 0% ${completedPct}%, 
-    #3b82f6 ${completedPct}% ${completedPct + inProgressPct}%, 
-    #eab308 ${completedPct + inProgressPct}% 100%
+    #10b981 0% ${completedPct}%, 
+    #6366f1 ${completedPct}% ${completedPct + inProgressPct}%, 
+    #f59e0b ${completedPct + inProgressPct}% 100%
   )`;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-[2rem] border border-gray-200 dark:border-gray-700 shadow-sm p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
-          <PieChart size={18} className="text-gray-400" />
+    <div className="bg-white dark:bg-[#151921] rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm p-6 relative overflow-hidden group">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6 relative z-10">
+        <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <PieChart size={18} className="text-slate-400" />
           Project Pulse
         </h3>
       </div>
 
-      <div className="flex items-center gap-8">
-         {/* Donut Chart */}
-         <div className="relative w-24 h-24 shrink-0 rounded-full" style={{ background: gradient }}>
-            <div className="absolute inset-2 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center">
+      <div className="flex items-center gap-6 relative z-10">
+         {/* Donut Chart with Glow */}
+         <div className="relative w-28 h-28 shrink-0 rounded-full shadow-lg" style={{ background: gradient }}>
+            <div className="absolute inset-3 bg-white dark:bg-[#151921] rounded-full flex items-center justify-center shadow-inner">
                <div className="text-center">
-                  <span className="block text-xl font-black text-gray-900 dark:text-white">{total}</span>
-                  <span className="text-[9px] font-bold text-gray-400 uppercase">Total</span>
+                  <span className="block text-2xl font-black text-slate-900 dark:text-white tracking-tighter">{total}</span>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total</span>
                </div>
             </div>
          </div>
 
-         {/* Legend */}
-         <div className="flex-1 space-y-3">
-            <div className="flex items-center justify-between">
+         {/* Legend Tiles */}
+         <div className="flex-1 space-y-2">
+            <div className="flex items-center justify-between p-2 rounded-lg border border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-[#1e222e]">
                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-sm" />
-                  <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Done</span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
+                  <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Done</span>
                </div>
-               <span className="text-xs font-black">{completedCount}</span>
+               <span className="text-xs font-black text-slate-900 dark:text-white">{completedCount}</span>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-2 rounded-lg border border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-[#1e222e]">
                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-sm" />
-                  <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Active</span>
+                  <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.4)]" />
+                  <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Active</span>
                </div>
-               <span className="text-xs font-black">{inProgressCount}</span>
+               <span className="text-xs font-black text-slate-900 dark:text-white">{inProgressCount}</span>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-2 rounded-lg border border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-[#1e222e]">
                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow-sm" />
-                  <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Pending</span>
+                  <span className="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]" />
+                  <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Pending</span>
                </div>
-               <span className="text-xs font-black">{pendingCount}</span>
+               <span className="text-xs font-black text-slate-900 dark:text-white">{pendingCount}</span>
             </div>
          </div>
       </div>

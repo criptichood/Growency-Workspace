@@ -13,7 +13,7 @@ const formatProjectContext = (project: Project, user: User) => {
   
   // PERMISSION CHECK
   const isAssigned = project.assignedUsers.includes(user.id);
-  const isAdmin = user.role === 'Admin';
+  const isAdmin = user.roles.includes('Admin');
   const hasFullAccess = isAdmin || isAssigned;
 
   const basicStr = `
