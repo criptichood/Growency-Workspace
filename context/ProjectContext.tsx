@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Project, ProjectBrief, ChatMessage, Note, SearchResults, SearchResult, ProjectTask, ProjectPhase, AiChatMessage, Role, SystemNotification, DirectMessageThread, Attachment, ResourceFile, ResourceCategory } from '../types';
-import { INITIAL_PROJECTS } from '../constants';
+import { INITIAL_PROJECTS, MOCK_USERS } from '../constants';
 
 interface NewProjectData {
   name: string;
@@ -28,7 +28,7 @@ interface ProjectContextType {
   toggleTask: (projectId: string, phaseId: string, taskId: string) => void;
   addTaskToPhase: (projectId: string, phaseId: string, taskTitle: string, assignedTo?: string) => void;
   deleteTask: (projectId: string, phaseId: string, taskId: string) => void;
-  addPhase: (projectId: string, phaseName: string) => void;
+  addPhase: (projectId: string, phaseName: string) => string; // Updated return type
   deletePhase: (projectId: string, phaseId: string) => void;
   completePhase: (projectId: string, phaseId: string) => void;
   performSearch: (query: string, userId: string, role: Role) => SearchResults;
@@ -39,7 +39,9 @@ interface ProjectContextType {
   
   // System Notifications
   notifications: SystemNotification[];
-  addNotification: (notification: Omit<SystemNotification, 'id' | 'createdAt'>) => void;
+  addNotification: (notification: Omit<SystemNotification, 'id' | 'createdAt' | 'isRead'>) => void;
+  markNotificationAsRead: (id: string) => void;
+  markAllNotificationsAsRead: () => void;
 
   // Direct Messages
   dmThreads: DirectMessageThread[];
@@ -66,7 +68,8 @@ const INITIAL_NOTIFICATIONS: SystemNotification[] = [
     title: 'System Maintenance',
     message: 'Scheduled maintenance this Saturday at 2 AM EST.',
     createdBy: '1',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString() // 1 day ago
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
+    isRead: false
   }
 ];
 
@@ -267,13 +270,24 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   // --- End DM Logic ---
 
-  function addNotification(notification: Omit<SystemNotification, 'id' | 'createdAt'>) {
+  function addNotification(notification: Omit<SystemNotification, 'id' | 'createdAt' | 'isRead'>) {
     const newNotif: SystemNotification = {
       ...notification,
       id: Math.random().toString(36).substr(2, 9),
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      isRead: false
     };
     saveNotifications([newNotif, ...notifications]);
+  }
+
+  function markNotificationAsRead(id: string) {
+    const updated = notifications.map(n => n.id === id ? { ...n, isRead: true } : n);
+    saveNotifications(updated);
+  }
+
+  function markAllNotificationsAsRead() {
+    const updated = notifications.map(n => ({ ...n, isRead: true }));
+    saveNotifications(updated);
   }
 
   function addResource(file: Omit<ResourceFile, 'id' | 'uploadedAt'>) {
@@ -360,6 +374,9 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
       timestamp: new Date().toISOString()
     };
 
+    const project = projects.find(p => p.id === projectId);
+    const user = MOCK_USERS[userId];
+
     const newProjects = projects.map(p => {
       if (p.id === projectId) {
         return {
@@ -372,6 +389,17 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
     });
 
     saveProjects(newProjects);
+
+    // Notification Logic: Notify others about new message
+    if (project && user) {
+        addNotification({
+            type: 'info',
+            title: `New Message in ${project.name}`,
+            message: `${user.name}: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`,
+            createdBy: userId,
+            link: `/projects/${project.code}?tab=chat`
+        });
+    }
   }
 
   function addNote(projectId: string, note: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>) {
@@ -460,6 +488,21 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
       return p;
     });
     saveProjects(newProjects);
+
+    // Notification Logic: Assigned Task
+    if (assignedTo) {
+        const project = projects.find(p => p.id === projectId);
+        const assignee = MOCK_USERS[assignedTo]?.name || 'a member';
+        if (project) {
+            addNotification({
+                type: 'info',
+                title: 'New Task Assignment',
+                message: `Task "${taskTitle}" has been assigned to ${assignee}.`,
+                createdBy: 'system',
+                link: `/projects/${project.code}?tab=tasks`
+            });
+        }
+    }
   }
 
   function deleteTask(projectId: string, phaseId: string, taskId: string) {
@@ -481,18 +524,20 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
     saveProjects(newProjects);
   }
 
-  function addPhase(projectId: string, phaseName: string) {
+  function addPhase(projectId: string, phaseName: string): string {
+    const newPhaseId = Math.random().toString(36).substr(2, 9);
     const newProjects = projects.map(p => {
       if (p.id === projectId) {
         return {
           ...p,
-          phases: [...p.phases, { id: Math.random().toString(36).substr(2, 9), name: phaseName, tasks: [] }],
+          phases: [...p.phases, { id: newPhaseId, name: phaseName, tasks: [] }],
           updatedAt: new Date().toISOString()
         };
       }
       return p;
     });
     saveProjects(newProjects);
+    return newPhaseId;
   }
 
   function deletePhase(projectId: string, phaseId: string) {
@@ -510,10 +555,12 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
   }
 
   function completePhase(projectId: string, phaseId: string) {
+    let completedPhaseName = '';
     const newProjects = projects.map(p => {
       if (p.id === projectId) {
         const newPhases = p.phases.map(ph => {
           if (ph.id === phaseId) {
+            completedPhaseName = ph.name;
             return {
               ...ph,
               tasks: ph.tasks.map(t => ({ ...t, isCompleted: true }))
@@ -526,6 +573,18 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
       return p;
     });
     saveProjects(newProjects);
+
+    // Notification Logic: Phase Completion
+    const project = projects.find(p => p.id === projectId);
+    if (project && completedPhaseName) {
+        addNotification({
+            type: 'success',
+            title: 'Phase Completed',
+            message: `The "${completedPhaseName}" phase in ${project.name} is now complete.`,
+            createdBy: 'system',
+            link: `/projects/${project.code}?tab=tasks`
+        });
+    }
   }
 
   function performSearch(query: string, userId: string, role: Role): SearchResults {
@@ -620,7 +679,7 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
       toggleTask, addTaskToPhase, deleteTask, addPhase, deletePhase, completePhase,
       performSearch, 
       aiChats, updateAiChat,
-      notifications, addNotification,
+      notifications, addNotification, markNotificationAsRead, markAllNotificationsAsRead,
       dmThreads, isDmDrawerOpen, activeDmThreadId, toggleDmDrawer, openDmWithUser, sendDmMessage,
       resources, addResource, deleteResource,
       isLoading 

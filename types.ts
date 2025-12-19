@@ -67,6 +67,7 @@ export interface Attachment {
   type: string; // MIME type
   url: string; // Data URL for this demo
   size: number;
+  // In a real app, this would be a URL to Supabase Storage
 }
 
 export interface ChatMessage {
@@ -120,6 +121,8 @@ export interface SystemNotification {
   message: string;
   createdBy: string;
   createdAt: string;
+  isRead: boolean;
+  link?: string; // Optional path to navigate to
 }
 
 export interface DirectMessageThread {
@@ -157,7 +160,7 @@ export interface SearchResults {
 }
 
 // Dashboard Layout Types
-export type WidgetId = 'stats' | 'health' | 'activity' | 'priorities';
+export type WidgetId = 'welcome' | 'stats' | 'health' | 'activity' | 'priorities';
 
 export interface DashboardWidgetConfig {
   id: WidgetId;

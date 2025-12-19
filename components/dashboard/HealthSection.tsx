@@ -1,4 +1,4 @@
-import { PieChart, CheckCircle2, Activity, Clock3, LucideIcon } from 'lucide-react';
+import { PieChart } from 'lucide-react';
 
 interface HealthSectionProps {
   completedCount: number;
@@ -6,64 +6,67 @@ interface HealthSectionProps {
   pendingCount: number;
 }
 
-interface HealthRowProps {
-  icon: LucideIcon;
-  label: string;
-  count: number;
-  colorClass: 'green' | 'blue' | 'yellow';
-}
-
-function HealthRow({ icon: Icon, label, count, colorClass }: HealthRowProps) {
-  const themes: Record<string, string> = {
-    green: 'bg-green-50/50 dark:bg-green-900/10 border-green-100 dark:border-green-900/20 hover:bg-green-50 text-green-600 dark:text-green-400',
-    blue: 'bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/20 hover:bg-blue-50 text-blue-600 dark:text-blue-400',
-    yellow: 'bg-yellow-50/50 dark:bg-yellow-900/10 border-yellow-100 dark:border-yellow-900/20 hover:bg-yellow-50 text-yellow-600 dark:text-yellow-400',
-  };
-
-  return (
-    <div className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all group shrink-0 ${themes[colorClass]}`}>
-      <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center shadow-sm border border-inherit shrink-0">
-          <Icon size={18} />
-        </div>
-        <span className="text-xs font-bold text-gray-700 dark:text-gray-300">{label}</span>
-      </div>
-      <span className="text-xl font-black">{count}</span>
-    </div>
-  );
-}
-
 export function HealthSection({ completedCount, inProgressCount, pendingCount }: HealthSectionProps) {
+  const total = completedCount + inProgressCount + pendingCount || 1;
+  
+  // Calculate percentages for CSS conic gradient
+  const completedPct = (completedCount / total) * 100;
+  const inProgressPct = (inProgressCount / total) * 100;
+  
+  // CSS Conic Gradient Logic
+  // Green starts at 0, goes to completedPct
+  // Blue starts at completedPct, goes to completedPct + inProgressPct
+  // Yellow takes the rest
+  const gradient = `conic-gradient(
+    #22c55e 0% ${completedPct}%, 
+    #3b82f6 ${completedPct}% ${completedPct + inProgressPct}%, 
+    #eab308 ${completedPct + inProgressPct}% 100%
+  )`;
+
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm p-6 flex flex-col h-fit">
-      <h3 className="font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
-        <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
-          <PieChart size={18} className="text-gray-500" />
-        </div>
-        Project Health
-      </h3>
-      <div className="space-y-3.5">
-        <HealthRow 
-          icon={CheckCircle2} 
-          label="Completed" 
-          count={completedCount} 
-          colorClass="green" 
-        />
-        <HealthRow 
-          icon={Activity} 
-          label="In Progress" 
-          count={inProgressCount} 
-          colorClass="blue" 
-        />
-        <HealthRow 
-          icon={Clock3} 
-          label="Pending" 
-          count={pendingCount} 
-          colorClass="yellow" 
-        />
+    <div className="bg-white dark:bg-gray-800 rounded-[2rem] border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <PieChart size={18} className="text-gray-400" />
+          Project Pulse
+        </h3>
       </div>
-      <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
-        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Status Overview</p>
+
+      <div className="flex items-center gap-8">
+         {/* Donut Chart */}
+         <div className="relative w-24 h-24 shrink-0 rounded-full" style={{ background: gradient }}>
+            <div className="absolute inset-2 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center">
+               <div className="text-center">
+                  <span className="block text-xl font-black text-gray-900 dark:text-white">{total}</span>
+                  <span className="text-[9px] font-bold text-gray-400 uppercase">Total</span>
+               </div>
+            </div>
+         </div>
+
+         {/* Legend */}
+         <div className="flex-1 space-y-3">
+            <div className="flex items-center justify-between">
+               <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-sm" />
+                  <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Done</span>
+               </div>
+               <span className="text-xs font-black">{completedCount}</span>
+            </div>
+            <div className="flex items-center justify-between">
+               <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-sm" />
+                  <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Active</span>
+               </div>
+               <span className="text-xs font-black">{inProgressCount}</span>
+            </div>
+            <div className="flex items-center justify-between">
+               <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow-sm" />
+                  <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Pending</span>
+               </div>
+               <span className="text-xs font-black">{pendingCount}</span>
+            </div>
+         </div>
       </div>
     </div>
   );

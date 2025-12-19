@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Search, LayoutGrid, List, CheckCircle2, Circle, Clock, ArrowRight, Layout, CheckSquare } from 'lucide-react';
+import { Search, LayoutGrid, List, CheckCircle2, Circle, Clock, ArrowRight, Layout, CheckSquare, Plus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useProjects } from '../context/ProjectContext';
 import { Link } from 'react-router-dom';
+import { QuickAddTaskModal } from '../components/tasks/QuickAddTaskModal';
 
 interface AggregatedTask {
   id: string;
@@ -21,6 +22,7 @@ export function MyTasks() {
   const { projects, toggleTask } = useProjects();
   const [viewMode, setViewMode] = useState<'board' | 'list'>('board');
   const [searchTerm, setSearchTerm] = useState('');
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
 
   if (!user) return null;
 
@@ -77,7 +79,15 @@ export function MyTasks() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+           <button 
+             onClick={() => setIsQuickAddOpen(true)}
+             className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 transition-all active:scale-95 text-sm font-bold"
+           >
+             <Plus size={18} />
+             New Task
+           </button>
+
            <div className="relative flex-1 sm:w-64">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input 
@@ -114,7 +124,14 @@ export function MyTasks() {
               <CheckCircle2 size={32} className="text-gray-300" />
            </div>
            <p className="font-bold text-lg text-gray-600 dark:text-gray-300">No tasks found</p>
-           <p className="text-sm text-gray-500 dark:text-gray-400">You're all caught up! Or try adjusting your search.</p>
+           <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">You're all caught up! Or try adjusting your search.</p>
+           <button 
+             onClick={() => setIsQuickAddOpen(true)}
+             className="flex items-center gap-2 px-6 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-xl hover:border-indigo-300 transition-all shadow-sm font-bold text-xs uppercase tracking-widest"
+           >
+             <Plus size={14} />
+             Add your first task
+           </button>
         </div>
       ) : (
         <>
@@ -203,6 +220,11 @@ export function MyTasks() {
           )}
         </>
       )}
+
+      <QuickAddTaskModal 
+        isOpen={isQuickAddOpen}
+        onClose={() => setIsQuickAddOpen(false)}
+      />
     </div>
   );
 }

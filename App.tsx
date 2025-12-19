@@ -12,6 +12,7 @@ import { MyTasks } from './pages/MyTasks';
 import { Calendar } from './pages/Calendar';
 import { Meetings } from './pages/Meetings';
 import { Resources } from './pages/Resources';
+import { History } from './pages/History';
 import { AuthProvider } from './context/AuthContext';
 import { TeamProvider } from './context/TeamContext';
 import { ProjectProvider } from './context/ProjectContext';
@@ -45,6 +46,7 @@ export default function App() {
                       <Route path="calendar" element={<Calendar />} />
                       <Route path="meetings" element={<Meetings />} />
                       <Route path="resources" element={<Resources />} />
+                      <Route path="history" element={<History />} />
                       <Route path="team" element={<Team />} />
                       <Route path="settings" element={<Settings />} />
                       <Route path="search" element={<SearchPage />} />

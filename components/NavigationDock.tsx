@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ChevronsRight, ChevronsLeft } from 'lucide-react';
 import { NAV_ITEMS } from '../constants';
@@ -13,16 +13,48 @@ export function NavigationDock() {
   const { config, updateConfig } = useConfig();
   const location = useLocation();
   const [isVisible, setIsVisible] = useState(false);
+  
+  const dockRef = useRef<HTMLElement>(null);
+  const mobileToggleRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     setIsVisible(false);
   }, [location.pathname]);
+
+  // Click outside to minimize logic
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // Ignore if clicking the dock itself
+      if (dockRef.current && dockRef.current.contains(event.target as Node)) {
+        return;
+      }
+
+      // Ignore if clicking the mobile toggle button
+      if (mobileToggleRef.current && mobileToggleRef.current.contains(event.target as Node)) {
+        return;
+      }
+
+      // Logic: Collapse desktop sidebar if expanded
+      if (config.sidebarExpanded) {
+        updateConfig({ sidebarExpanded: false });
+      }
+
+      // Logic: Close mobile menu if visible
+      if (isVisible) {
+        setIsVisible(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [config.sidebarExpanded, isVisible, updateConfig]);
 
   const toggleDock = () => updateConfig({ sidebarExpanded: !config.sidebarExpanded });
 
   return (
     <>
       <button 
+        ref={mobileToggleRef}
         onClick={() => setIsVisible(!isVisible)}
         className={`lg:hidden fixed left-0 top-1/2 -translate-y-1/2 z-[60] bg-white dark:bg-gray-800 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 border-y border-r border-gray-200 dark:border-gray-700 py-2 pr-1.5 pl-0.5 rounded-r-lg shadow-md transition-transform duration-300 ${isVisible ? 'translate-x-[64px]' : 'translate-x-0'}`}
         aria-label="Toggle Navigation"
@@ -36,6 +68,7 @@ export function NavigationDock() {
         `}
       >
         <aside 
+          ref={dockRef}
           className={`flex flex-col bg-white/95 dark:bg-gray-800/95 border border-gray-200 dark:border-gray-700 rounded-[2rem] shadow-2xl transition-all duration-500 overflow-visible ${
             config.sidebarExpanded ? 'w-56 p-4' : 'w-16 p-2'
           }`}

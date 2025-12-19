@@ -1,4 +1,4 @@
-import { LayoutDashboard, FolderKanban, Settings, Users, CheckSquare, Calendar as CalendarIcon, Video, FileBox } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, Settings, Users, CheckSquare, Calendar as CalendarIcon, Video, FileBox, History } from 'lucide-react';
 import { NavItem, Project, User, UserStatusType } from './types';
 
 export const APP_NAME = 'Growency';
@@ -58,6 +58,11 @@ export const NAV_ITEMS: NavItem[] = [
     label: 'Team',
     path: '/team',
     icon: Users,
+  },
+  {
+    label: 'History',
+    path: '/history',
+    icon: History,
   },
 ];
 
